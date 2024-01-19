@@ -26,7 +26,7 @@ Available options:
 
 Clone this repository:
 Bash
-git clone https://github.com/<your-username>/cruxPass.git
+git clone https://github.com/c0d-0x/Cruxpass-Password-manager
 Use code with caution. Learn more
 Compile the code:
 Bash
