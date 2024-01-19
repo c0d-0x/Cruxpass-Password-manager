@@ -1,4 +1,4 @@
-# cruxPass Password management
+# cruxpass Password management
 
 A simple, secure command-line password manager
 
@@ -50,7 +50,7 @@ Contributions are welcome! Please submit pull requests or open issues for any su
 
 ## License
 
-cruxPass is licensed under the MIT License. See the LICENSE file for details.
+cruxPass is licensed under the **MIT License**. See the LICENSE file for details.
 
 ## Contact
 
@@ -60,6 +60,6 @@ For any questions or feedback, please contact <your-email>.
 
 This project is currently under development.
 Future plans include:
-Encryption of stored passwords
-Support for multiple password databases
-Integration with other password management tools
+- Encryption of stored passwords
+- Support for multiple password databases
+- Integration with other password management tools
