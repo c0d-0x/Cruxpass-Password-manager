@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
               ACCLENGTH);
     }
 
-    strncpy(password->pass, argv[2], PASSLENGTH);
-    strncpy(password->account, argv[3], ACCLENGTH);
+    strcpy(password->pass, argv[2]);
+    strcpy(password->account, argv[3]);
     save_password(password, file_ptr);
 
     // Authenication
