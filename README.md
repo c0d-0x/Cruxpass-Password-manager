@@ -17,10 +17,12 @@ Use code with caution. Learn more
 Available options:
 
  + -h: Display help information
- + -g <password> <username>: Generate a password and store it for the specified username
+ + -s <password> <username>: Generate a password and store it for the specified username
  + -r: Generate a random password without storing it
- + -s <username>: Search for a password by username
+ + -c <username>: Search for a password by username
  + -l: List all saved passwords
+ + -e: <file name>: Export all saved passwords to a csv format
+ + -i: <file name>: Import passwords from a csv file
 
 ## Installation
 

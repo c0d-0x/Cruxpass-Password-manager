@@ -1,4 +1,5 @@
 test.c
 *.out
 *.bin
+.vscode:w
 main
