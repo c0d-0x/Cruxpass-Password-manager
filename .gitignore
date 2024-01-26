@@ -3,3 +3,5 @@ test.c
 *.bin
 .vscode:w
 main
+password.db
+test.csv

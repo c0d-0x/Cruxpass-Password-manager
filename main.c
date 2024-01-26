@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-FILE *file_ptr;
+FILE *database_ptr;
 void help() {
   printf("Syntax: cruxPass <option> <Search / password> <username "
          "only with -s >\n");
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
     strcpy(password->pass, argv[2]);
     strcpy(password->account, argv[3]);
-    save_password(password, file_ptr);
+    save_password(password, database_ptr);
 
     // Authenication
     // writing to the Database
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     // Authenication
     // list all passwords stored in the Database.
-    list_all_passwords(file_ptr);
+    list_all_passwords(database_ptr);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
 
@@ -61,6 +61,17 @@ int main(int argc, char *argv[]) {
 
     // Authenication to the Database
     // call shearch for password
+  } else if (strncmp(argv[1], "-e", sizeof(char) * 2) == 0) {
+    if (argc != 3) {
+      fprintf(stderr, " usage: %s <-e> <csv file>", argv[1]);
+    }
+    export_pass(database_ptr, argv[2]);
+  } else if (strncmp(argv[1], "-i", sizeof(char) * 2) == 0) {
+    if (argc != 3) {
+      fprintf(stderr, " usage: %s <-i> <csv file>", argv[1]);
+    }
+    import_pass(database_ptr, argv[2]);
   }
+
   return EXIT_SUCCESS;
 }

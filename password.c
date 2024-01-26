@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 void *random_password(void) {
   char pass_bank[] = {
@@ -25,8 +26,8 @@ void *random_password(void) {
   return (void *)password;
 }
 
-void save_password(const password_t *password, FILE *file_ptr) {
-  if ((file_ptr = fopen("password.bin", "ab")) == NULL) {
+void save_password(const password_t *password, FILE *database_ptr) {
+  if ((database_ptr = fopen("password.db", "ab")) == NULL) {
     perror("Password Database");
     return;
   };
@@ -34,27 +35,113 @@ void save_password(const password_t *password, FILE *file_ptr) {
   // calls deccrypt function to deccrypt the database
   // hash the password.
   //
-  if (fwrite((void *)password, sizeof(password_t), 1, file_ptr) != 1) {
-    perror("Writing to password.bin");
+  if (fwrite((void *)password, sizeof(password_t), 1, database_ptr) != 1) {
+    perror("Fail to save password");
   };
   // ecrypt the file back
-  fclose(file_ptr);
+  fclose(database_ptr);
 }
 
-void list_all_passwords(FILE *file_ptr) {
-  if ((file_ptr = fopen("password.bin", "rb")) == NULL) {
-    perror("cannot read password db");
+void list_all_passwords(FILE *database_ptr) {
+  if ((database_ptr = fopen("password.db", "rb")) == NULL) {
+    perror("Fail to open PASSWORD_DB");
     return;
   }
   password_t *password = malloc(sizeof(password_t));
   if (password == NULL) {
-    perror("memory allocation fail");
+    perror("Memory Allocation");
     return;
   }
-  while (fread(password, sizeof(password_t), 1, file_ptr) == 1) {
+  char *temp = malloc(sizeof(char) * PASSLENGTH);
+  // i was having touble reading only the password without the it's correponding
+  // username
+  while (fread(temp, PASSLENGTH, 1, database_ptr) == 1) {
+    strncpy(password->pass, temp, PASSLENGTH);
+    memset(temp, '\0', PASSLENGTH);
+    fread(temp, PASSLENGTH, 1, database_ptr);
+    strncpy(password->account, temp, ACCLENGTH);
     fprintf(stdout, "Password: %s\tAccount: %s\n", password->pass,
             password->account);
   }
-  fclose(file_ptr);
+  fclose(database_ptr);
   free(password);
+}
+
+void export_pass(FILE *database_ptr, const char *export_file) {
+  // Authenticate
+
+  FILE *fp;
+  if ((fp = fopen(export_file, "wb")) == NULL) {
+    perror("Fail to Export");
+    return;
+  }
+  if ((database_ptr = fopen("password.db", "rb")) == NULL) {
+    perror("Fail to open PASSWORD_DB");
+    return;
+  }
+  password_t *password = malloc(sizeof(password_t));
+  if (password == NULL) {
+    perror("Memory Allocation");
+    return;
+  }
+  fputs("Password,Account\n", fp);
+  while (fread(password, sizeof(password_t), 1, database_ptr) == 1) {
+    fprintf(fp, "%s,%s\n", password->pass, password->account);
+  }
+  fclose(fp);
+  fclose(database_ptr);
+}
+
+void import_pass(FILE *database_ptr, const char *import_file) {
+  // Authenticate
+  if (access(import_file, F_OK) != 0) {
+    perror("Fail to import passwords");
+    return;
+  }
+
+  FILE *fp;
+  if ((fp = fopen(import_file, "r")) == NULL) {
+    perror("Fail to import passwords");
+  }
+
+  if ((database_ptr = fopen("password.db", "ab")) == NULL) {
+    perror("Fail to open PASSWORD_DB");
+    return;
+  }
+
+  int i = 0;
+  char *token, *saveptr;
+  token = malloc(sizeof(char) * 40);
+  char buffer[BUFFMAX + 2];
+  password_t *password = malloc(sizeof(password_t));
+  if (password == NULL) {
+    perror("Memory Allocation");
+    return;
+  }
+
+  while (fgets(buffer, BUFFMAX, fp) != NULL) {
+
+    token = strtok_r(buffer, ",", &saveptr);
+    if (strlen(token) > PASSLENGTH) {
+      fprintf(stderr, "Password at line %d is more than 35 characters\n", i);
+      i++;
+      continue;
+    }
+
+    strncpy(password->pass, token, PASSLENGTH);
+    token = strtok_r(NULL, ",", &saveptr);
+
+    if (strlen(token) > PASSLENGTH) {
+      fprintf(stderr, "Account Name at line %d is more than 30 characters\n",
+              i);
+      i++;
+      continue;
+    }
+
+    strncpy(password->account, token, ACCLENGTH);
+    fwrite(password, sizeof(password_t), 1, database_ptr);
+    i++;
+  }
+  fclose(fp);
+  fclose(database_ptr);
 }
