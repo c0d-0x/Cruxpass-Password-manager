@@ -4,14 +4,17 @@
 #include <string.h>
 FILE *database_ptr;
 void help() {
-  printf("Syntax: cruxPass <option> <Search / password> <username "
-         "only with -s >\n");
+  printf("Syntax: cruxPass <option> <password> <username--optional--> "
+         "<description>\n");
 
   printf(" -h: shows this help\n -s: stores a password\n -r: "
          "generates "
-         "a random password\n -c: searches a password by username\n -l: list "
+         "a random password and takes no arguments\n -c: searches a password "
+         "by username\n -l: list "
          "all saved "
-         "passwords\n");
+         "passwords and takes no arguments \n -e: Exports all passwords to a "
+         "csv file\n -i: imports "
+         "passwords from a csv file\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -26,27 +29,28 @@ int main(int argc, char *argv[]) {
     help();
   } else if (strncmp(argv[1], "-s", sizeof(char) * 2) == 0) {
 
-    if (argc != 4) {
-      fprintf(stderr, " usage: %s <-s> <password> <account or username>",
+    if (argc != 5) {
+      fprintf(stderr, " usage: %s <-s> <password> <username> <description>",
               argv[0]);
       return 1;
     }
-    if ((strlen(argv[2]) > PASSLENGTH) || (strlen(argv[3]) > ACCLENGTH)) {
-      fprintf(stderr, "MAX PASSLENGTH: %d & MAX ACCLENGTH: %d\n", PASSLENGTH,
-              ACCLENGTH);
+    // Authenication[TODO]
+    if ((strlen(argv[2]) > PASSLENGTH) ||
+        (strlen(argv[3]) > ACCLENGTH || (strlen(argv[4]) > DESCLENGTH))) {
+      fprintf(stderr,
+              "MAX PASSLENGTH: %d & MAX ACCLENGTH: %d & MAX DESCLENGTH: %d\n",
+              PASSLENGTH, ACCLENGTH, DESCLENGTH);
+      return 1;
     }
 
-    strcpy(password->pass, argv[2]);
-    strcpy(password->account, argv[3]);
+    strcpy(password->passd, argv[2]);
+    strcpy(password->username, argv[3]);
+    strcpy(password->description, argv[4]);
     save_password(password, database_ptr);
-
-    // Authenication
-    // writing to the Database
 
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
 
-    // Authenication
-    // list all passwords stored in the Database.
+    // Authenication[TODO]
     list_all_passwords(database_ptr);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
@@ -56,11 +60,11 @@ int main(int argc, char *argv[]) {
     free(password);
   } else if (strncmp(argv[1], "-c", sizeof(char) * 2) == 0) {
     if (argc != 3) {
-      fprintf(stderr, " usage: %s <-s> <account or username>", argv[1]);
+      fprintf(stderr, " usage: %s <-c> <username>", argv[1]);
     }
 
-    // Authenication to the Database
-    // call shearch for password
+    // Authenication[TODO]
+    // shearch[TODO]
   } else if (strncmp(argv[1], "-e", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       fprintf(stderr, " usage: %s <-e> <csv file>", argv[1]);
@@ -71,7 +75,8 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, " usage: %s <-i> <csv file>", argv[1]);
     }
     import_pass(database_ptr, argv[2]);
+  } else {
+    help();
   }
-
   return EXIT_SUCCESS;
 }
