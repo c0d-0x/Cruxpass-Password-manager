@@ -18,12 +18,16 @@ void help() {
 }
 
 int main(int argc, char *argv[]) {
-  password_t *password;
   if (argc < 2) {
     help();
     return 1;
   }
-
+  password_t *password = NULL;
+  password = malloc(sizeof(password_t));
+  if (password == NULL) {
+    perror("Memory allocation fail");
+    return 1;
+  }
   if (strncmp(argv[1], "-h", sizeof(char) * 2) == 0) {
 
     help();
@@ -78,5 +82,6 @@ int main(int argc, char *argv[]) {
   } else {
     help();
   }
+  free(password);
   return EXIT_SUCCESS;
 }

@@ -5,19 +5,17 @@
 #include <time.h>
 #include <unistd.h>
 // [TODO] cleanup needed, request_mem implementation not necessary
-char *passTmp;
-char *unameTmp;
-password_t *password_Tmp;
+char *passTmp = NULL;
+char *unameTmp = NULL;
+password_t *password_Tmp = NULL;
 
 int request_mem(void) {
-  // I've reused the same variables in 2 functions, hence the need for a
-  // function
   passTmp = malloc(sizeof(char) * DESCLENGTH);
   unameTmp = malloc(sizeof(char) * ACCLENGTH);
   password_Tmp = malloc(sizeof(password_t));
 
   if (passTmp == NULL || unameTmp == NULL || password_Tmp == NULL) {
-    perror("Memory Allocation");
+    perror("Memory Allocation Fail");
     return 1;
   }
   return 0;
@@ -113,6 +111,22 @@ void export_pass(FILE *database_ptr, const char *export_file) {
   free(unameTmp);
 }
 
+int process_field(char *field, const int max_length, char *token,
+                  const char *field_name, size_t line_number) {
+
+  if (token == NULL) {
+    fprintf(stderr, "Missing %s at line %ld\n", field_name, line_number);
+    return -1;
+  }
+  if (strlen(token) > max_length) {
+    fprintf(stderr, "%s at line %ld is more than %d characters\n", field_name,
+            line_number, max_length);
+    return -1;
+  }
+  strncpy(field, token, max_length);
+  return 0;
+}
+
 void import_pass(FILE *database_ptr, const char *import_file) {
   // Authenticate [TODO]
   if (access(import_file, F_OK) != 0) {
@@ -130,8 +144,8 @@ void import_pass(FILE *database_ptr, const char *import_file) {
     return;
   }
 
-  size_t i = 0;
-  char *token, *saveptr;
+  size_t line_number = 1;
+  char *saveptr;
   char buffer[BUFFMAX];
   password_t *password = malloc(sizeof(password_t));
   if (password == NULL) {
@@ -140,44 +154,31 @@ void import_pass(FILE *database_ptr, const char *import_file) {
   }
 
   while (fgets(buffer, BUFFMAX, fp) != NULL) {
+    buffer[strcspn(buffer, "\n")] = '\0'; // Remove trailing newline
 
-    size_t len = strlen(buffer);
-    if (len > 0 && buffer[len - 1] == '\n') {
-      buffer[len - 1] = '\0'; // Replace newline with null terminator
-    }
-
-    token = strtok_r(buffer, ",", &saveptr);
-    if (strlen(token) > PASSLENGTH) {
-      fprintf(stderr, "Password at line %ld is more than %d characters\n", i,
-              PASSLENGTH);
-      i++;
-      continue;
-    }
-    // Refactor for portability [TODO]
-    strncpy(password->passd, token, PASSLENGTH);
-    token = strtok_r(NULL, ",", &saveptr);
-
-    if (strlen(token) > PASSLENGTH) {
-      fprintf(stderr, "username Name at line %ld is more than %d characters\n",
-              i, ACCLENGTH);
-      i++;
-      continue;
-    }
-    strncpy(password->username, token, ACCLENGTH);
-
-    token = strtok_r(NULL, ",", &saveptr);
-
-    if (strlen(token) > DESCLENGTH) {
-      fprintf(stderr,
-              "Password description at line %ld is more than %d characters\n",
-              i, DESCLENGTH);
-      i++;
+    if (process_field(password->username, ACCLENGTH,
+                      strtok_r(buffer, ",", &saveptr), "Username",
+                      line_number) != 0) {
+      line_number++;
       continue;
     }
 
-    strncpy(password->description, token, DESCLENGTH);
+    if (process_field(password->passd, PASSLENGTH,
+                      strtok_r(NULL, ",", &saveptr), "Password",
+                      line_number) != 0) {
+      line_number++;
+      continue;
+    }
+
+    if (process_field(password->description, DESCLENGTH,
+                      strtok_r(NULL, ",", &saveptr), "Description",
+                      line_number) != 0) {
+      line_number++;
+      continue;
+    }
+
     fwrite(password, sizeof(password_t), 1, database_ptr);
-    i++;
+    line_number++;
   }
   fclose(fp);
   fclose(database_ptr);
