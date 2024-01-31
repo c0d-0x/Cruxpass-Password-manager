@@ -1,7 +1,4 @@
 #include "password.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 FILE *database_ptr;
 void help() {
   printf("Syntax: cruxPass <option> <password> <username--optional--> "

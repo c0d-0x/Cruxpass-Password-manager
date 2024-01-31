@@ -1,4 +1,12 @@
+#ifndef PASSWORD_H
+#define PASSWORD_H
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+
 #define PASSLENGTH 35
 #define ACCLENGTH 30
 #define DESCLENGTH 56
@@ -20,11 +28,4 @@ void list_all_passwords(FILE *database_ptr);
 void export_pass(FILE *database_ptr, const char *export_file);
 void import_pass(FILE *database_ptr, const char *import_file);
 
-int process_field(char *field, const int max_length, char *token,
-                  const char *field_name, size_t line_number);
-/**
- * field: password_t field
- * max_length: field MAX, a const
- * field_name: for error handling
- * line_number also for error handling
- */
+#endif // DEBUG
