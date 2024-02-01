@@ -1,7 +1,7 @@
 test.c
 *.out
 *.bin
-.vscode:w
+.vscode
 main
 password.db
 test.csv

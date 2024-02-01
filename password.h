@@ -18,6 +18,7 @@ typedef struct {
   char description[DESCLENGTH];
 } password_t;
 
+void help();
 void *random_password(void);
 void save_password(const password_t *password,
                    FILE *database_ptr); // takes in random_password as argument

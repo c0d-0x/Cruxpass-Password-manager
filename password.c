@@ -4,7 +4,21 @@ char *passTmp = NULL;
 char *unameTmp = NULL;
 password_t *password_Tmp = NULL;
 
-int request_mem(void) {
+void help() {
+  printf("Syntax: cruxPass <option> <password> <username--optional--> "
+         "<description>\n");
+
+  printf(" -h: shows this help\n -s: stores a password\n -r: "
+         "generates "
+         "a random password and takes no arguments\n -c: searches a password "
+         "by username\n -l: list "
+         "all saved "
+         "passwords and takes no arguments \n -e: Exports all passwords to a "
+         "csv file\n -i: imports "
+         "passwords from a csv file\n");
+}
+
+static int request_mem(void) {
   passTmp = malloc(sizeof(char) * DESCLENGTH);
   unameTmp = malloc(sizeof(char) * ACCLENGTH);
   password_Tmp = malloc(sizeof(password_t));

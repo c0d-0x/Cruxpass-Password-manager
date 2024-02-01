@@ -1,18 +1,6 @@
 #include "password.h"
-FILE *database_ptr;
-void help() {
-  printf("Syntax: cruxPass <option> <password> <username--optional--> "
-         "<description>\n");
 
-  printf(" -h: shows this help\n -s: stores a password\n -r: "
-         "generates "
-         "a random password and takes no arguments\n -c: searches a password "
-         "by username\n -l: list "
-         "all saved "
-         "passwords and takes no arguments \n -e: Exports all passwords to a "
-         "csv file\n -i: imports "
-         "passwords from a csv file\n");
-}
+FILE *database_ptr;
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
