@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
 
-    void *password = random_password();
-    printf("%s\n", (char *)password);
+    char *password = random_password();
+    printf("%s\n", password);
     free(password);
   } else if (strncmp(argv[1], "-c", sizeof(char) * 2) == 0) {
     if (argc != 3) {

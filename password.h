@@ -13,20 +13,22 @@
 #define BUFFMAX PASSLENGTH + ACCLENGTH + DESCLENGTH
 
 typedef struct {
+  size_t id;
   char passd[PASSLENGTH];
   char username[ACCLENGTH];
   char description[DESCLENGTH];
 } password_t;
 
 void help();
-void *random_password(void);
-void save_password(const password_t *password,
-                   FILE *database_ptr); // takes in random_password as argument
-                                        // then saves in a database.
+char *random_password(void);
+void *delete_password(FILE *, size_t, void *);
+int save_password(password_t *password,
+                  FILE *database_ptr); // takes in random_password as argument
+                                       // then saves in a database.
 void *authentication(
     void *master_passd); // takes in a an address of the master password.
 void list_all_passwords(FILE *database_ptr);
 void export_pass(FILE *database_ptr, const char *export_file);
 void import_pass(FILE *database_ptr, const char *import_file);
 
-#endif // DEBUG
+#endif
