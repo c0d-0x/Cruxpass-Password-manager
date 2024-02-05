@@ -1,11 +1,28 @@
 #include "password.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-// [TODO] cleanup needed, request_mem implementation not necessary
-char *passTmp = NULL;
-char *unameTmp = NULL;
-password_t *password_Tmp = NULL;
+char *id_generator(const password_t *password) {
+  char *password_str = NULL;
+  char *salt = NULL;
+  char *hash = NULL;
+
+  hash = malloc(sizeof(char) * IDLENGTH);
+  salt = malloc(sizeof(char) * 2);
+  if (salt == NULL || hash == NULL) {
+    perror("Memory Allocation Fail");
+    return NULL;
+  }
+
+  password_str = strndup(password->passd, PASSLENGTH);
+  for (int i = 0; i < 2; i++) {
+    salt[i] = (rand() % 26) + 97;
+  }
+
+  hash = crypt(password_str, salt);
+  return hash;
+}
 
 void help() {
   printf("Syntax: cruxPass <option> <password> <username--optional--> "
@@ -19,18 +36,6 @@ void help() {
          "passwords and takes no arguments \n -e: Exports all passwords to a "
          "csv file\n -i: imports "
          "passwords from a csv file\n");
-}
-
-static int request_mem(void) {
-  passTmp = malloc(sizeof(char) * DESCLENGTH);
-  unameTmp = malloc(sizeof(char) * ACCLENGTH);
-  password_Tmp = malloc(sizeof(password_t));
-
-  if (passTmp == NULL || unameTmp == NULL || password_Tmp == NULL) {
-    perror("Memory Allocation Fail");
-    return 1;
-  }
-  return 0;
 }
 
 char *random_password(void) {
@@ -57,39 +62,25 @@ char *random_password(void) {
 
 int save_password(password_t *password, FILE *password_db) {
   // [TOBEFIXED]
-  password_t *tem_pass = malloc(sizeof(password_t));
-  if (tem_pass == NULL) { // Check for malloc failure
-    perror("Fail to allocate memory for tem_pass");
-    return 1;
-  }
 
   if ((password_db = fopen("password.db", "ab")) == NULL) {
     perror("Fail to open PASSWORD_DB");
-    free(tem_pass); // Free memory if fopen fails
     return 1;
   }
 
   // ... (decryption logic here)
-
-  if (fseek(password_db, -(sizeof(password_t)), SEEK_END) != 0) {
-    password->id = 1;
-  } else if (fread(tem_pass, sizeof(password_t), 1, password_db) == 1) {
-    password->id = tem_pass->id + 1;
-  }
-
   // hash the password
-
+  srand(time(NULL));
+  strncpy(password->id, id_generator(password), IDLENGTH);
   if (fwrite(password, sizeof(password_t), 1, password_db) != 1) {
     perror("Fail to save password");
     fclose(password_db);
-    free(tem_pass);
     return 1;
   }
 
   // ... (encryption logic here)
 
   fclose(password_db);
-  free(tem_pass);
   return 0;
 }
 
@@ -102,19 +93,28 @@ void list_all_passwords(FILE *password_db) {
    * A temp variable to print exactly the password word
    * without printing along it's username detail
    **/
-  if (request_mem() == 1) {
+  password_t *password = NULL;
+  char *passTmp = NULL;
+  char *unameTmp = NULL;
+  password = malloc(sizeof(password_t));
+  if (password == NULL) {
+    perror("Memory Allocation Fail");
     return;
   }
 
-  while (fread(password_Tmp, sizeof(password_t), 1, password_db) == 1) {
-    strncpy(passTmp, password_Tmp->passd, PASSLENGTH);
-    strncpy(unameTmp, password_Tmp->username, ACCLENGTH);
-    fprintf(stdout, "ID: %ld\nUsername: %s\nPassword: %s\nDescription: %s\n\n",
-            password_Tmp->id, unameTmp, passTmp, password_Tmp->description);
+  char *id;
+  while (fread(password, sizeof(password_t), 1, password_db) == 1) {
+    id = strndup(password->id, IDLENGTH);
+    passTmp = strndup(password->passd, PASSLENGTH);
+    unameTmp = strndup(password->username, ACCLENGTH);
+
+    fprintf(stdout, "ID: %s\nUsername: %s\nPassword: %s\nDescription: %s\n\n",
+            id, unameTmp, passTmp, password->description);
   }
 
   fclose(password_db);
-  free(password_Tmp);
+  free(id);
+  free(password);
   free(passTmp);
   free(unameTmp);
 }
@@ -133,21 +133,26 @@ void export_pass(FILE *password_db, const char *export_file) {
     return;
   }
 
-  if (request_mem() == 1) {
+  password_t *password = NULL;
+  char *passTmp = NULL;
+  char *unameTmp = NULL;
+
+  password = malloc(sizeof(password_t));
+  if (password == NULL) {
+    perror("Memory Allocation Fail");
     return;
   }
 
   fputs("Username,Password,Description\n", fp);
-  while (fread(password_Tmp, sizeof(password_t), 1, password_db) == 1) {
-
-    strncpy(passTmp, password_Tmp->passd, PASSLENGTH);
-    strncpy(unameTmp, password_Tmp->username, ACCLENGTH);
-    fprintf(fp, " %s,%s,%s\n", unameTmp, passTmp, password_Tmp->description);
+  while (fread(password, sizeof(password_t), 1, password_db) == 1) {
+    passTmp = strndup(password->passd, PASSLENGTH);
+    unameTmp = strndup(password->username, ACCLENGTH);
+    fprintf(fp, " %s,%s,%s\n", unameTmp, passTmp, password->description);
   }
 
   fclose(fp);
   fclose(password_db);
-  free(password_Tmp);
+  free(password);
   free(passTmp);
   free(unameTmp);
 }
@@ -200,6 +205,7 @@ void import_pass(FILE *password_db, const char *import_file) {
     return;
   }
 
+  srand(time(NULL));
   while (fgets(buffer, BUFFMAX, fp) != NULL) {
     buffer[strcspn(buffer, "\n")] = '\0'; // Remove trailing newline
 
@@ -223,8 +229,10 @@ void import_pass(FILE *password_db, const char *import_file) {
       line_number++;
       continue;
     }
-
+    char *id_hash = id_generator(password);
+    strncpy(password->id, id_hash, IDLENGTH);
     fwrite(password, sizeof(password_t), 1, password_db);
+    // free(id_hash);
     line_number++;
   }
   fclose(fp);
@@ -232,40 +240,48 @@ void import_pass(FILE *password_db, const char *import_file) {
   free(password);
 }
 // [TODO] add id field to my password_t struct and update necessary funcs
-void *delete_password(FILE *password_db, size_t id, void *username) {
+int delete_password(FILE *password_db, char *id) {
   FILE *temp_bin = NULL;
   password_t *password = NULL;
-  void *deleted_password = NULL;
-
+  int password_deleted = 0;
   password = malloc(sizeof(password_t));
-  deleted_password = malloc(sizeof(password_t));
 
-  if (password == NULL || deleted_password == NULL) {
+  if (password == NULL) {
     perror("Memory Allocation");
-    return NULL;
+    return 0;
   }
-  if ((temp_bin = fopen("temp.db", "wb")) == NULL) {
+  if ((temp_bin = fopen(".temp.db", "wb")) == NULL) {
     perror("Fail to open temp.db");
-    return NULL;
+    return 0;
   }
 
   if ((password_db = fopen("password.db", "ab")) == NULL) {
     perror("Fail to open PASSWORD_DB");
-    return NULL;
+    return 0;
   }
 
   while (fread(password, sizeof(password_t), 1, password_db) == 1) {
-    if (password->id == id &&
-        strncmp(password->username, username, ACCLENGTH) == 0) {
-      deleted_password = password;
+    if (strncmp(password->id, id, IDLENGTH) == 0) {
+      printf(
+          "ID: %s\nUsername: %s\nPassword: %s\nDescription: %s\nIs deleted...",
+          password->id, password->username, password->passd,
+          password->description);
+      password_deleted = 1;
       continue;
     }
+
     fwrite(password, sizeof(password_t), 1, temp_bin);
   }
+
   fclose(password_db);
   fclose(temp_bin);
-  remove("password.db");
-  rename("temp.db", "password.db");
 
-  return deleted_password;
+  if (password_deleted) {
+    remove("password.db");
+    rename(".temp.db", "password.db");
+  } else {
+    // remove(".temp.db");
+  }
+
+  return password_deleted;
 }

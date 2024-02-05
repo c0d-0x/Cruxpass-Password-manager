@@ -1,19 +1,20 @@
 #ifndef PASSWORD_H
 #define PASSWORD_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <uchar.h>
 #include <unistd.h>
 
+#define IDLENGTH 16
 #define PASSLENGTH 35
 #define ACCLENGTH 30
 #define DESCLENGTH 56
 #define BUFFMAX PASSLENGTH + ACCLENGTH + DESCLENGTH
 
 typedef struct {
-  size_t id;
+  char id[IDLENGTH];
   char passd[PASSLENGTH];
   char username[ACCLENGTH];
   char description[DESCLENGTH];
@@ -21,7 +22,7 @@ typedef struct {
 
 void help();
 char *random_password(void);
-void *delete_password(FILE *, size_t, void *);
+int delete_password(FILE *, char *);
 int save_password(password_t *password,
                   FILE *database_ptr); // takes in random_password as argument
                                        // then saves in a database.

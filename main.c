@@ -1,6 +1,9 @@
 #include "password.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-FILE *database_ptr;
+FILE *password_db;
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -19,9 +22,9 @@ int main(int argc, char *argv[]) {
   } else if (strncmp(argv[1], "-s", sizeof(char) * 2) == 0) {
 
     if (argc != 5) {
-      fprintf(stderr, " usage: %s <-s> <password> <username> <description>",
+      fprintf(stderr, " usage: %s <-s> <password> <username> <description>\n",
               argv[0]);
-      return 1;
+      return EXIT_FAILURE;
     }
     // Authenication[TODO]
     if ((strlen(argv[2]) > PASSLENGTH) ||
@@ -29,18 +32,18 @@ int main(int argc, char *argv[]) {
       fprintf(stderr,
               "MAX PASSLENGTH: %d & MAX ACCLENGTH: %d & MAX DESCLENGTH: %d\n",
               PASSLENGTH, ACCLENGTH, DESCLENGTH);
-      return 1;
+      return EXIT_FAILURE;
     }
 
     strcpy(password->passd, argv[2]);
     strcpy(password->username, argv[3]);
     strcpy(password->description, argv[4]);
-    save_password(password, database_ptr);
+    save_password(password, password_db);
 
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
 
     // Authenication[TODO]
-    list_all_passwords(database_ptr);
+    list_all_passwords(password_db);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
 
@@ -49,23 +52,45 @@ int main(int argc, char *argv[]) {
     free(password);
   } else if (strncmp(argv[1], "-c", sizeof(char) * 2) == 0) {
     if (argc != 3) {
-      fprintf(stderr, " usage: %s <-c> <username>", argv[1]);
+      fprintf(stderr, " usage: %s <-c> <username>\n", argv[0]);
+      return EXIT_FAILURE;
     }
 
     // Authenication[TODO]
     // shearch[TODO]
   } else if (strncmp(argv[1], "-e", sizeof(char) * 2) == 0) {
     if (argc != 3) {
-      fprintf(stderr, " usage: %s <-e> <csv file>", argv[1]);
+      fprintf(stderr, " usage: %s <-e> <csv file>\n", argv[0]);
+      return EXIT_FAILURE;
     }
-    export_pass(database_ptr, argv[2]);
+    export_pass(password_db, argv[2]);
   } else if (strncmp(argv[1], "-i", sizeof(char) * 2) == 0) {
     if (argc != 3) {
-      fprintf(stderr, " usage: %s <-i> <csv file>", argv[1]);
+      fprintf(stderr, " usage: %s <-i> <csv file>\n", argv[0]);
+      return EXIT_FAILURE;
     }
-    import_pass(database_ptr, argv[2]);
+    import_pass(password_db, argv[2]);
+
+  } else if (strncmp(argv[1], "-d", sizeof(char) * 2) == 0) {
+
+    if (argc != 3) {
+      fprintf(stderr, " usage: %s <-d> <password ID>\n", argv[0]);
+      return EXIT_FAILURE;
+    }
+
+    if (strlen(argv[2]) > IDLENGTH) {
+      fprintf(stderr, "%s is not a valid password id.\n", argv[2]);
+      return EXIT_FAILURE;
+    }
+
+    if (delete_password(password_db, argv[2]) == 0) {
+      fprintf(stderr, "Password was not found...\n");
+      return EXIT_FAILURE;
+    }
+
   } else {
     help();
+    return EXIT_SUCCESS;
   }
   free(password);
   return EXIT_SUCCESS;

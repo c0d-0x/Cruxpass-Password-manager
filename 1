@@ -1,0 +1,32 @@
+#include <stdio.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+  int opt;
+
+  while ((opt = getopt(argc, argv, "g:bc")) != -1) {
+    switch (opt) {
+    case 'a':
+      printf("Option a with argument: %s\n", optarg);
+      break;
+    case 'b':
+      printf("Option b\n");
+      break;
+    case 'c':
+      printf("Option c\n");
+      break;
+    case '?':
+      printf("Invalid option: %c\n", optopt);
+      break;
+    default:
+      printf("Error!\n");
+    }
+  }
+
+  // Process remaining non-option arguments
+  for (; optind < argc; optind++) {
+    printf("Non-option argument: %s\n", argv[optind]);
+  }
+
+  return 0;
+}
