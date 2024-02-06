@@ -1,7 +1,4 @@
 #include "password.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 FILE *password_db;
 
@@ -83,7 +80,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    if (delete_password(password_db, argv[2]) == 0) {
+    if (delete_password(password_db, atoi(argv[2])) == 0) {
       fprintf(stderr, "Password was not found...\n");
       return EXIT_FAILURE;
     }

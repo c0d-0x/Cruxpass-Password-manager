@@ -7,14 +7,14 @@
 #include <uchar.h>
 #include <unistd.h>
 
-#define IDLENGTH 16
+#define IDLENGTH 13
 #define PASSLENGTH 35
 #define ACCLENGTH 30
 #define DESCLENGTH 56
 #define BUFFMAX PASSLENGTH + ACCLENGTH + DESCLENGTH
 
 typedef struct {
-  char id[IDLENGTH];
+  size_t id;
   char passd[PASSLENGTH];
   char username[ACCLENGTH];
   char description[DESCLENGTH];
@@ -22,7 +22,7 @@ typedef struct {
 
 void help();
 char *random_password(void);
-int delete_password(FILE *, char *);
+int delete_password(FILE *, size_t);
 int save_password(password_t *password,
                   FILE *database_ptr); // takes in random_password as argument
                                        // then saves in a database.
