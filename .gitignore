@@ -1,7 +1,9 @@
 test.c
 *.out
+*.o
 *.bin
 .vscode
 main
-password.db
-test.csv
+cruxpass
+*.db
+*.csv

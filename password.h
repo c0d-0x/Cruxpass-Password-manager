@@ -29,7 +29,7 @@ int save_password(password_t *password,
 void *authentication(
     void *master_passd); // takes in a an address of the master password.
 void list_all_passwords(FILE *database_ptr);
-void export_pass(FILE *database_ptr, const char *export_file);
+int export_pass(FILE *database_ptr, const char *export_file);
 void import_pass(FILE *database_ptr, const char *import_file);
 
 #endif

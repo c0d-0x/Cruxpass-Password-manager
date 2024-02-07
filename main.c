@@ -1,4 +1,5 @@
 #include "password.h"
+#include <stdio.h>
 
 FILE *password_db;
 
@@ -8,11 +9,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   password_t *password = NULL;
-  password = malloc(sizeof(password_t));
-  if (password == NULL) {
-    perror("Memory allocation fail");
-    return 1;
-  }
   if (strncmp(argv[1], "-h", sizeof(char) * 2) == 0) {
 
     help();
@@ -32,10 +28,19 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
+    password = malloc(sizeof(password_t));
+    if (password == NULL) {
+      perror("Memory allocation fail");
+      return 1;
+    }
+
     strcpy(password->passd, argv[2]);
     strcpy(password->username, argv[3]);
     strcpy(password->description, argv[4]);
-    save_password(password, password_db);
+    if (save_password(password, password_db) == 0) {
+      printf("Password saved...\n");
+      free(password);
+    }
 
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
 
@@ -49,7 +54,8 @@ int main(int argc, char *argv[]) {
     free(password);
   } else if (strncmp(argv[1], "-c", sizeof(char) * 2) == 0) {
     if (argc != 3) {
-      fprintf(stderr, " usage: %s <-c> <username>\n", argv[0]);
+      fprintf(stderr, " usage: %s <-c> <username> under construction...\n",
+              argv[0]);
       return EXIT_FAILURE;
     }
 
@@ -60,12 +66,15 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, " usage: %s <-e> <csv file>\n", argv[0]);
       return EXIT_FAILURE;
     }
-    export_pass(password_db, argv[2]);
+    if (export_pass(password_db, argv[2]) == 0) {
+      printf("Passwords exported to %s", argv[2]);
+    };
   } else if (strncmp(argv[1], "-i", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       fprintf(stderr, " usage: %s <-i> <csv file>\n", argv[0]);
       return EXIT_FAILURE;
     }
+
     import_pass(password_db, argv[2]);
 
   } else if (strncmp(argv[1], "-d", sizeof(char) * 2) == 0) {
@@ -80,7 +89,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    if (delete_password(password_db, atoi(argv[2])) == 0) {
+    if (delete_password(password_db, atoi(argv[2])) != 0) {
       fprintf(stderr, "Password was not found...\n");
       return EXIT_FAILURE;
     }
@@ -89,6 +98,5 @@ int main(int argc, char *argv[]) {
     help();
     return EXIT_SUCCESS;
   }
-  free(password);
   return EXIT_SUCCESS;
 }
