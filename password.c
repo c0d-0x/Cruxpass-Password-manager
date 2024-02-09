@@ -9,11 +9,13 @@ static size_t set_id() {
   }
 
   size_t temp_id = 0;
-  password_t *temp_pass = malloc(sizeof(password_t));
+  password_t *temp_pass = NULL;
+  temp_pass = malloc(sizeof(password_t));
+
   if (temp_pass == NULL) {
     perror("Memory Allocation Fail");
     fclose(password_db);
-    return temp_id;
+    return 0;
   }
 
   // Seek to the end of the file
@@ -55,7 +57,8 @@ char *random_password(void) {
       '4', '5', '6', '7', '8', '9', '!', '#', '$', '%', '&', '(', ')', '_',
       '+', '=', '{', '}', '[', ']', ';', ':', '<', '@', '>', '?'};
 
-  char *password = malloc(sizeof(char) * PASSLENGTH);
+  char *password = NULL;
+  password = malloc(sizeof(char) * PASSLENGTH);
   if (password == NULL) {
     perror("Fail to creat password");
     return NULL;
@@ -69,8 +72,6 @@ char *random_password(void) {
 }
 
 int save_password(password_t *password, FILE *password_db) {
-  // [TOBEFIXED]
-  size_t id = set_id();
   if ((password_db = fopen("password.db", "ab")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     return 1;
@@ -78,10 +79,12 @@ int save_password(password_t *password, FILE *password_db) {
 
   // ... (decryption logic here)
 
+  size_t id = set_id();
   if (id == 0) {
     fprintf(stderr, "Fail to set an id\n");
-    return 1;
+    return EXIT_FAILURE;
   }
+
   password->id = id;
   if (fwrite(password, sizeof(password_t), 1, password_db) != 1) {
     perror("Fail to save password");
@@ -128,9 +131,9 @@ void list_all_passwords(FILE *password_db) {
 }
 
 /// @brief exports passwords from the password_db to a csv file
-/// @param password_db 
-/// @param export_file 
-/// @return 
+/// @param password_db
+/// @param export_file
+/// @return
 int export_pass(FILE *password_db, const char *export_file) {
   // Authenticate [TODO]
 
@@ -220,7 +223,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   }
 
   size_t id = set_id();
-  if (id < 1) {
+  if (id == 0) {
     fprintf(stderr, "could not set an id\n");
     return;
   }
