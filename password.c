@@ -127,6 +127,10 @@ void list_all_passwords(FILE *password_db) {
   free(unameTmp);
 }
 
+/// @brief exports passwords from the password_db to a csv file
+/// @param password_db 
+/// @param export_file 
+/// @return 
 int export_pass(FILE *password_db, const char *export_file) {
   // Authenticate [TODO]
 

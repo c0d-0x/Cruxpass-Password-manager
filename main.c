@@ -1,5 +1,4 @@
 #include "password.h"
-#include <stdio.h>
 
 FILE *password_db;
 
@@ -34,9 +33,9 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    strcpy(password->passd, argv[2]);
-    strcpy(password->username, argv[3]);
-    strcpy(password->description, argv[4]);
+    strncpy(password->passd, argv[2], PASSLENGTH);
+    strncpy(password->username, argv[3], ACCLENGTH);
+    strncpy(password->description, argv[4], DESCLENGTH);
     if (save_password(password, password_db) == 0) {
       printf("Password saved...\n");
       free(password);
@@ -88,8 +87,9 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "%s is not a valid password id.\n", argv[2]);
       return EXIT_FAILURE;
     }
-
-    if (delete_password(password_db, atoi(argv[2])) != 0) {
+    size_t id = atoi(argv[2]);
+    //[TODO] check if id is a number
+    if (delete_password(password_db, id) != 0) {
       fprintf(stderr, "Password was not found...\n");
       return EXIT_FAILURE;
     }
