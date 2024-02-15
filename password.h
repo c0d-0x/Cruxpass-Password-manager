@@ -15,9 +15,9 @@
 
 typedef struct {
   size_t id;
-  char passd[PASSLENGTH];
-  char username[ACCLENGTH];
-  char description[DESCLENGTH];
+  char passd[PASSLENGTH + 1];
+  char username[ACCLENGTH + 1];
+  char description[DESCLENGTH + 1];
 } password_t;
 
 void help();

@@ -83,12 +83,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    if (strlen(argv[2]) > IDLENGTH) {
-      fprintf(stderr, "%s is not a valid password id.\n", argv[2]);
-      return EXIT_FAILURE;
-    }
     size_t id = atoi(argv[2]);
-    //[TODO] check if id is a number
     if (delete_password(password_db, id) != 0) {
       fprintf(stderr, "Password was not found...\n");
       return EXIT_FAILURE;
