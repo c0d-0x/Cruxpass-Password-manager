@@ -23,6 +23,7 @@ Available options:
 - -l: List all saved passwords
 - -e: <file name>: Export all saved passwords to a csv format
 - -i: <file name>: Import passwords from a csv file
+- -d: <password id>: deletes a password by id
 
 ## Installation
 
@@ -57,6 +58,12 @@ cruxPass is licensed under the **MIT License**. See the LICENSE file for details
 ## Contact
 
 For any questions or feedback, please contact <c0d_0x007@proton.me>.
+
+## What I HAve Learned
+- string manuplation
+    - Tokenization
+    - 
+
 
 ## Additional Notes
 

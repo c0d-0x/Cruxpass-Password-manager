@@ -1,4 +1,4 @@
-#include "password.h"
+#include "src/password.h"
 
 FILE *password_db;
 
@@ -91,7 +91,6 @@ int main(int argc, char *argv[]) {
 
   } else {
     help();
-    return EXIT_SUCCESS;
   }
   return EXIT_SUCCESS;
 }

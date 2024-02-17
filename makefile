@@ -1,13 +1,14 @@
 CC=clang
 CFLAGS=-Wall -Wextra
-CFILES=*.c
+CFILES=./src/*.c
 OBJFILES=*.o
 BIN=cruxpass
+MAIN=main.c
 
 all:$(BIN)
 
 $(BIN):$(OBJFILES) 
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(MAIN) -o $@ $^
 
 $(OBJFILES):$(CFILES) 
 	$(CC) $(CFLAGS) -c $^

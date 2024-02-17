@@ -1,6 +1,4 @@
 #include "password.h"
-#include <stdlib.h>
-#include <string.h>
 
 static size_t set_id() {
   FILE *password_db;
