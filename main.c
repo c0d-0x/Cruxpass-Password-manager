@@ -1,4 +1,4 @@
-#include "src/password.h"
+#include "src/cruxpass.h"
 
 FILE *password_db;
 

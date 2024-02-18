@@ -1,4 +1,4 @@
-#include "password.h"
+#include "cruxpass.h"
 
 static size_t set_id() {
   FILE *password_db;
