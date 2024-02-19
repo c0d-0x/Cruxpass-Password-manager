@@ -16,14 +16,14 @@ cruxPass <option> <argument>
 Use code with caution. Learn more
 Available options:
 
-- -c: <username>: Search for a password by username
-- -e: <file name>: Export all saved passwords to a csv format
-- -i: <file name>: Import passwords from a csv file
+- -c: \<username\>: Search for a password by username
+- -d: \<password id\>: deletes a password by id
+- -e: \<file name\>: Export all saved passwords to a csv format
 - -h: Display help information
-- -s <password> <username>: Generate a password and store it for the specified username
-- -r: Generate a random password without storing it
+- -i: '<file name>': Import passwords from a csv file
 - -l: List all saved passwords
-- -d: <password id>: deletes a password by id
+- -r: Generate a random password without storing it
+- -s '<password> <username>': Generate a password and store it for the specified username
 
 ## Installation
 
