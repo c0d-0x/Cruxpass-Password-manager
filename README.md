@@ -17,13 +17,13 @@ Use code with caution. Learn more
 Available options:
 
 - -c: \<username\>: Search for a password by username
-- -d: \<password id\>: deletes a password by id
+- -d: \<password id\>: Deletes a password by id
 - -e: \<file name\>: Export all saved passwords to a csv format
 - -h: Display help information
-- -i: '<file name>': Import passwords from a csv file
+- -i: \<file name\>: Import passwords from a csv file
 - -l: List all saved passwords
 - -r: Generate a random password without storing it
-- -s '<password> <username>': Generate a password and store it for the specified username
+- -s: \<password\> \<username\>: Generate a password and store it for the specified username
 
 ## Installation
 
