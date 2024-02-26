@@ -3,85 +3,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-int create_newPASS() {
-  char hashed_password[crypto_pwhash_STRBYTES];
-  FILE *master_fp;
-
-  char new_pass[PASSLENGTH];
-  if (access("autho.db", F_OK) == 0) {
-    int hash_read = 0;
-
-    if ((master_fp = fopen("autho.db", "rb")) != NULL) {
-      hash_read = fread(hashed_password, sizeof(hashed_password), 1, master_fp);
-      if (!hash_read) {
-        fprintf(stderr, "No master password found\n");
-      } else {
-
-        char *old_pass = getpass("Enter Old Password: ");
-        if (strlen(old_pass) > PASSLENGTH) {
-          fprintf(stderr, "INVALID PASSWORD: Password Too Long\n");
-          fclose(master_fp);
-          return EXIT_FAILURE;
-        }
-
-        if (crypto_pwhash_str_verify(hashed_password, old_pass,
-                                     strlen(old_pass)) != 0) {
-          fprintf(stderr, "INVALID PASSWORD");
-          fclose(master_fp);
-          return EXIT_FAILURE;
-        }
-      }
-    }
-    fclose(master_fp);
-  }
-}
-
-int authentication(void *master_passd) {
-  /* [TODO:]
-   * hash the passd str
-   * cmp it with the saved passd hash
-   * if correct use the password to decrypt db
-   */
-
-  char hashed_password[crypto_pwhash_STRBYTES];
-  int hash_read = 0;
-  if (access("autho.db", F_OK) == 0) {
-    FILE *master_fp;
-    if ((master_fp = fopen("autho.db", "rb")) != NULL) {
-      hash_read = fread(hashed_password, sizeof(hashed_password), 1, master_fp);
-      if (!hash_read) {
-        fprintf(stderr, "No master password found\n");
-      }
-    }
-  } else {
-    perror("Fail To Authencate\n");
-    return EXIT_FAILURE;
-  }
-
-  // if (crypto_pwhash_str(hashed_password, master_passd,
-  // strlen(master_passd),
-  //                       crypto_pwhash_OPSLIMIT_SENSITIVE,
-  //                       crypto_pwhash_MEMLIMIT_SENSITIVE) != 0) {
-  //   /* out of memory */
-  //   fprintf(stderr, "Fail to hash master password\n");
-  //   return EXIT_FAILURE;
-  // }
-  //
-  if (crypto_pwhash_str_verify(hashed_password, master_passd,
-                               strlen(master_passd)) != 0) {
-    /* wrong password */
-    fprintf(stderr, "Wrong Password...\n");
-    return EXIT_FAILURE;
-  }
-  return EXIT_SUCCESS;
-}
-
-#define CHUNK_SIZE 4096
+#define KEY_LEN crypto_box_SEEDBYTES
 
 static void cleanup(FILE *source_file, FILE *target_file) {
   fclose(source_file);
   fclose(target_file);
+}
+
+static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
+                                  char *new_passd, unsigned char *salt,
+                                  int tag) {
+
+  switch (tag) {
+
+  case 0:
+    if (crypto_pwhash(key, sizeof key, new_passd, strlen(new_passd), salt,
+                      crypto_pwhash_OPSLIMIT_INTERACTIVE,
+                      crypto_pwhash_MEMLIMIT_INTERACTIVE,
+                      crypto_pwhash_ALG_DEFAULT) != 0) {
+      /* out of memory */
+      fprintf(stderr, "Could not Generate New Password");
+      return EXIT_FAILURE;
+    }
+    break;
+  case 1:
+
+    if (crypto_pwhash_str(hashed_password, new_passd, strlen(new_passd),
+                          crypto_pwhash_OPSLIMIT_SENSITIVE,
+                          crypto_pwhash_MEMLIMIT_SENSITIVE) != 0) {
+      /* out of memory */
+      fprintf(stderr, "Fail to hash master password\n");
+      return EXIT_FAILURE;
+    }
+    break;
+  }
+  return EXIT_SUCCESS;
 }
 
 static int encrypt(
@@ -114,7 +70,7 @@ static int encrypt(
     fwrite(buf_out, 1, (size_t)out_len, fp_target);
   } while (!eof);
   cleanup(fp_source, fp_target);
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 static int decrypt(
@@ -168,5 +124,84 @@ static int decrypt(
     fwrite(buf_out, 1, (size_t)out_len, fp_target);
   } while (!eof);
 
+  return EXIT_SUCCESS;
+}
+
+int authenticate(char *master_passd) {
+  /* [TODO:]
+   * hash the passd str
+   * cmp it with the saved passd hash
+   * if correct use the password to decrypt db
+   */
+
+  char hashed_password[crypto_pwhash_STRBYTES];
+  int hash_read = 0;
+  if (access("auth.db", F_OK) == 0) {
+    FILE *master_fp;
+    if ((master_fp = fopen("auth.db", "rb")) != NULL) {
+      hash_read = fread(hashed_password, sizeof(hashed_password), 1, master_fp);
+      if (!hash_read) {
+        fprintf(stderr, "No master password found\n");
+        return EXIT_FAILURE;
+      }
+    }
+  } else {
+    perror("Fail To Authencate\n");
+    return EXIT_FAILURE;
+  }
+
+  if (crypto_pwhash_str_verify(hashed_password, master_passd,
+                               strlen(master_passd)) != 0) {
+    /* wrong password */
+    fprintf(stderr, "Wrong Password...\n");
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+int create_new_master_passd(char *master_passd) {
+  char hashed_password[crypto_pwhash_STRBYTES];
+  char new_passd[PASSLENGTH];
+  char temp_passd[PASSLENGTH];
+  FILE *master_fp = NULL;
+
+  if (authenticate(master_passd) != 0) {
+    return EXIT_FAILURE;
+  }
+
+  if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0) {
+    char passstr[crypto_pwhash_SALTBYTES + crypto_pwhash_SALTBYTES + 2];
+    unsigned char salt[crypto_pwhash_SALTBYTES];
+    unsigned char old_salt[crypto_pwhash_SALTBYTES];
+    unsigned char key[KEY_LEN];
+
+    randombytes_buf(salt, sizeof salt);
+
+    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+      perror("Fail To open AUTH_DB");
+      return EXIT_FAILURE;
+    }
+    fread(hashed_password, sizeof(hashed_password), 1, master_fp);
+    fread(old_salt, sizeof(old_salt), 1,
+          master_fp); // [TODO: Implement a struct for stored hash and salt]
+    generate_key_pass_hash(NULL, hashed_password, new_passd, salt, 1);
+    generate_key_pass_hash(key, NULL, master_passd, old_salt, 0);
+
+    sprintf(passstr, "%s %s", hashed_password, salt);
+    fputs(passstr, master_fp);
+    fclose(master_fp);
+
+    if (decrypt("tmp_password.db", "password.db", key) != 0) {
+      fprintf(stderr, "Fail to decrypt PASSWORD_DB\n");
+      return EXIT_FAILURE;
+    }
+
+    generate_key_pass_hash(key, NULL, new_passd, salt, 0);
+    encrypt("password.db", "tmp_password", key);
+    remove("tmp_password");
+  } else {
+    fprintf(stderr, "Passwords do not march\n");
+    return EXIT_FAILURE;
+  }
   return EXIT_SUCCESS;
 }

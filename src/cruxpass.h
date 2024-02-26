@@ -7,6 +7,7 @@
 #include <uchar.h>
 #include <unistd.h>
 
+#define CHUNK_SIZE 4096
 #define IDLENGTH 13
 #define PASSLENGTH 35
 #define ACCLENGTH 30
