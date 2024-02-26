@@ -1,14 +1,15 @@
 CC=clang
+LIBS=-lsodium -lncurses
 CFLAGS=-Wall -Wextra
 CFILES=./src/*.c
 OBJFILES=*.o
-BIN=cruxpass
+BIN=./bin/cruxpass
 MAIN=main.c
 
 all:$(BIN)
 
 $(BIN):$(OBJFILES) 
-	$(CC) $(CFLAGS) $(MAIN) -o $@ $^
+	$(CC) $(CFLAGS) $(LIBS) $(MAIN) -o $@ $^
 
 $(OBJFILES):$(CFILES) 
 	$(CC) $(CFLAGS) -c $^

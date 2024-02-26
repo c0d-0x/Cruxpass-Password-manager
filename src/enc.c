@@ -1,9 +1,7 @@
 #include "cruxpass.h"
-#include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define KEY_LEN crypto_box_SEEDBYTES
 
 static void cleanup(FILE *source_file, FILE *target_file) {
   fclose(source_file);
@@ -161,15 +159,24 @@ int authenticate(char *master_passd) {
 
 int create_new_master_passd(char *master_passd) {
   char hashed_password[crypto_pwhash_STRBYTES];
-  char new_passd[PASSLENGTH];
-  char temp_passd[PASSLENGTH];
+  char *new_passd;
+  char *temp_passd;
+  hashed_pass_t *old_hashed_passeord = NULL;
   FILE *master_fp = NULL;
 
   if (authenticate(master_passd) != 0) {
     return EXIT_FAILURE;
   }
 
+  new_passd = getpass("New Password: ");
+  if (strlen(new_passd) > PASSLENGTH) {
+    fprintf(stderr, "Password Too Long\n");
+    return EXIT_FAILURE;
+  }
+
+  temp_passd = getpass("Confirm New Password: ");
   if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0) {
+
     char passstr[crypto_pwhash_SALTBYTES + crypto_pwhash_SALTBYTES + 2];
     unsigned char salt[crypto_pwhash_SALTBYTES];
     unsigned char old_salt[crypto_pwhash_SALTBYTES];
@@ -177,17 +184,19 @@ int create_new_master_passd(char *master_passd) {
 
     randombytes_buf(salt, sizeof salt);
 
-    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+    if ((master_fp = fopen("auth.db", "rb+")) == NULL) {
       perror("Fail To open AUTH_DB");
       return EXIT_FAILURE;
     }
-    fread(hashed_password, sizeof(hashed_password), 1, master_fp);
-    fread(old_salt, sizeof(old_salt), 1,
-          master_fp); // [TODO: Implement a struct for stored hash and salt]
-    generate_key_pass_hash(NULL, hashed_password, new_passd, salt, 1);
-    generate_key_pass_hash(key, NULL, master_passd, old_salt, 0);
 
-    sprintf(passstr, "%s %s", hashed_password, salt);
+    old_hashed_passeord = malloc(sizeof(hashed_pass_t));
+    fread(old_hashed_passeord, sizeof(hashed_pass_t), 1, master_fp);
+    generate_key_pass_hash(NULL, hashed_password, new_passd, salt, 1);
+    generate_key_pass_hash(key, NULL, master_passd, old_hashed_passeord->salt,
+                           0);
+
+    rewind(master_fp);
+    sprintf(passstr, "%s%s", hashed_password, salt);
     fputs(passstr, master_fp);
     fclose(master_fp);
 

@@ -1,5 +1,6 @@
 #ifndef CRUXPASS_H
 #define CRUXPASS_H
+#include <sodium.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +14,9 @@
 #define ACCLENGTH 30
 #define DESCLENGTH 56
 #define BUFFMAX PASSLENGTH + ACCLENGTH + DESCLENGTH
+#define KEY_LEN crypto_box_SEEDBYTES
+#define PASS_HASH_LEN crypto_pwhash_STRBYTES
+#define SALT_HASH_LEN crypto_pwhash_SALTBYTES
 
 typedef struct {
   size_t id;
@@ -20,6 +24,11 @@ typedef struct {
   char username[ACCLENGTH + 1];
   char description[DESCLENGTH + 1];
 } password_t;
+
+typedef struct {
+  unsigned char password_hash[PASS_HASH_LEN + 1];
+  unsigned char salt[SALT_HASH_LEN + 1];
+} hashed_pass_t;
 
 void help();
 char *random_password(void);
