@@ -1,4 +1,5 @@
 #include "cruxpass.h"
+#include <sodium/crypto_pwhash.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -86,7 +87,6 @@ static int decrypt(
   unsigned long long out_len;
   size_t rlen;
   int eof;
-  int ret = -1;
   unsigned char tag;
 
   fp_source = fopen(source_file, "rb");
@@ -158,10 +158,10 @@ int authenticate(char *master_passd) {
 }
 
 int create_new_master_passd(char *master_passd) {
-  char hashed_password[crypto_pwhash_STRBYTES];
+  char hashed_password[crypto_pwhash_STRBYTES + 1];
   char *new_passd;
   char *temp_passd;
-  hashed_pass_t *old_hashed_passeord = NULL;
+  hashed_pass_t *old_hashed_password = NULL;
   FILE *master_fp = NULL;
 
   if (authenticate(master_passd) != 0) {
@@ -175,9 +175,10 @@ int create_new_master_passd(char *master_passd) {
   }
 
   temp_passd = getpass("Confirm New Password: ");
-  if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0) {
+  if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0 &&
+      strlen(temp_passd) <= PASSLENGTH) {
 
-    char passstr[crypto_pwhash_SALTBYTES + crypto_pwhash_SALTBYTES + 2];
+    char passstr[crypto_pwhash_STRBYTES + crypto_pwhash_SALTBYTES + 2];
     unsigned char salt[crypto_pwhash_SALTBYTES];
     unsigned char old_salt[crypto_pwhash_SALTBYTES];
     unsigned char key[KEY_LEN];
@@ -189,10 +190,15 @@ int create_new_master_passd(char *master_passd) {
       return EXIT_FAILURE;
     }
 
-    old_hashed_passeord = malloc(sizeof(hashed_pass_t));
-    fread(old_hashed_passeord, sizeof(hashed_pass_t), 1, master_fp);
+    old_hashed_password = malloc(sizeof(hashed_pass_t));
+    if (old_hashed_password == NULL) {
+      fprintf(stderr, "Memory Allocation Fail\n");
+      return EXIT_FAILURE;
+    }
+
+    fread(old_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
     generate_key_pass_hash(NULL, hashed_password, new_passd, salt, 1);
-    generate_key_pass_hash(key, NULL, master_passd, old_hashed_passeord->salt,
+    generate_key_pass_hash(key, NULL, master_passd, old_hashed_password->salt,
                            0);
 
     rewind(master_fp);
@@ -206,6 +212,7 @@ int create_new_master_passd(char *master_passd) {
     }
 
     generate_key_pass_hash(key, NULL, new_passd, salt, 0);
+    remove("password.db");
     encrypt("password.db", "tmp_password", key);
     remove("tmp_password");
   } else {
@@ -213,4 +220,63 @@ int create_new_master_passd(char *master_passd) {
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
+}
+
+void __init__() {
+  if (access("auth.db", F_OK) != 0) {
+    // char opt = 'Y';
+    char *new_passd = NULL;
+    char *temp_passd = NULL;
+    if (access("password.db", F_OK) == 0) {
+      fprintf(stdout, "There is a PASSWORD_DB found...\n");
+      fprintf(stdout, "Would you like to create a backup [Y/N]\n");
+      // do {
+      //   scanf("%c", &opt);
+      // } while (opt != 'Y' || opt != 'N');
+    }
+    // if (opt == 'Y')
+    //   rename("password.db", "password_backup.db");
+    // else
+    //   remove("password.db");
+
+    new_passd = calloc(sizeof(char), PASSLENGTH + 1);
+    temp_passd = calloc(sizeof(char), PASSLENGTH + 1);
+
+    if (temp_passd == NULL || new_passd == NULL) {
+      fprintf(stderr, "Memory Allocation Fail\n");
+      return;
+    }
+
+    fprintf(stdout, "Create a new Master Password\n");
+    new_passd = getpass("New Password: ");
+    if (strlen(new_passd) > PASSLENGTH) {
+      fprintf(stderr, "Password Too Long\n");
+      return;
+    }
+
+    temp_passd = getpass("Confirm New Password: ");
+
+    if (strcmp(new_passd, temp_passd) != 0) {
+      fprintf(stderr, "Password Do Not Match\n");
+      return;
+    }
+
+    char hashed_password[crypto_pwhash_STRBYTES + 1];
+    unsigned char salt[crypto_pwhash_SALTBYTES];
+    char passstr[crypto_pwhash_STRBYTES + crypto_pwhash_SALTBYTES + 1];
+    FILE *master_fp;
+
+    randombytes_buf(salt, sizeof salt);
+
+    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+      perror("Fail To open AUTH_DB");
+      return;
+    }
+
+    generate_key_pass_hash(NULL, hashed_password, new_passd, NULL, 1);
+    sprintf(passstr, "%s%s", hashed_password, salt);
+    fputs(passstr, master_fp);
+    fclose(master_fp);
+    return;
+  }
 }

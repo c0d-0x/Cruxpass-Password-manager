@@ -1,4 +1,5 @@
 test.c
+test
 *.out
 *.o
 *.bin

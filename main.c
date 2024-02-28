@@ -8,6 +8,10 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   password_t *password = NULL;
+
+  if (strncmp(argv[1], "-r", sizeof(char) * 2) != 0)
+    __init__();
+
   if (strncmp(argv[1], "-h", sizeof(char) * 2) == 0) {
 
     help();

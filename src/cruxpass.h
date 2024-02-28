@@ -27,10 +27,11 @@ typedef struct {
 
 typedef struct {
   unsigned char password_hash[PASS_HASH_LEN + 1];
-  unsigned char salt[SALT_HASH_LEN + 1];
+  unsigned char salt[SALT_HASH_LEN];
 } hashed_pass_t;
 
 void help();
+void __init__();
 char *random_password(void);
 int delete_password(FILE *, size_t);
 int save_password(password_t *password,
