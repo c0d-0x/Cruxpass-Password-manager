@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
   password_t *password = NULL;
 
   if (strncmp(argv[1], "-r", sizeof(char) * 2) != 0)
-    __init__();
+    __initcrux();
 
   if (strncmp(argv[1], "-h", sizeof(char) * 2) == 0) {
 

@@ -16,7 +16,7 @@ static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
   switch (tag) {
 
   case 0:
-    if (crypto_pwhash(key, sizeof key, new_passd, strlen(new_passd), salt,
+    if (crypto_pwhash(key, sizeof(key), new_passd, strlen(new_passd), salt,
                       crypto_pwhash_OPSLIMIT_INTERACTIVE,
                       crypto_pwhash_MEMLIMIT_INTERACTIVE,
                       crypto_pwhash_ALG_DEFAULT) != 0) {
@@ -222,28 +222,39 @@ int create_new_master_passd(char *master_passd) {
   return EXIT_SUCCESS;
 }
 
-void __init__() {
+void __initcrux() {
+  //[TODO]: createa getpass function
   if (access("auth.db", F_OK) != 0) {
-    // char opt = 'Y';
+    int opt = -1;
     char *new_passd = NULL;
     char *temp_passd = NULL;
     if (access("password.db", F_OK) == 0) {
       fprintf(stdout, "There is a PASSWORD_DB found...\n");
       fprintf(stdout, "Would you like to create a backup [Y/N]\n");
-      // do {
-      //   scanf("%c", &opt);
-      // } while (opt != 'Y' || opt != 'N');
+      do {
+        opt = getchar();
+
+      } while (opt != 'Y' || opt != 'N');
     }
-    // if (opt == 'Y')
-    //   rename("password.db", "password_backup.db");
-    // else
-    //   remove("password.db");
+    if (opt == 'Y')
+      rename("password.db", "password_backup.db");
+    else
+      remove("password.db");
 
-    new_passd = calloc(sizeof(char), PASSLENGTH + 1);
-    temp_passd = calloc(sizeof(char), PASSLENGTH + 1);
+    FILE *master_fp;
 
-    if (temp_passd == NULL || new_passd == NULL) {
-      fprintf(stderr, "Memory Allocation Fail\n");
+    new_passd = calloc(PASSLENGTH + 1, sizeof(char));
+    temp_passd = calloc(PASSLENGTH + 1, sizeof(char));
+
+    char *hashed_password = calloc(crypto_pwhash_STRBYTES, sizeof(char));
+    unsigned char *salt =
+        calloc(crypto_pwhash_SALTBYTES, sizeof(unsigned char));
+    char *passstr = malloc(
+        sizeof(char) * (crypto_pwhash_STRBYTES + crypto_pwhash_SALTBYTES + 1));
+
+    if (hashed_password == NULL || salt == NULL || new_passd == NULL ||
+        temp_passd == NULL) {
+      perror("Calloc");
       return;
     }
 
@@ -261,22 +272,27 @@ void __init__() {
       return;
     }
 
-    char hashed_password[crypto_pwhash_STRBYTES + 1];
-    unsigned char salt[crypto_pwhash_SALTBYTES];
-    char passstr[crypto_pwhash_STRBYTES + crypto_pwhash_SALTBYTES + 1];
-    FILE *master_fp;
-
     randombytes_buf(salt, sizeof salt);
 
     if ((master_fp = fopen("auth.db", "wb")) == NULL) {
       perror("Fail To open AUTH_DB");
-      return;
+      goto free_mm;
     }
 
     generate_key_pass_hash(NULL, hashed_password, new_passd, NULL, 1);
-    sprintf(passstr, "%s%s", hashed_password, salt);
+    if (sprintf(passstr, "%s%s", hashed_password, salt) < 0) {
+      fprintf(stderr, "sprintf Failed\n");
+      fclose(master_fp);
+      return;
+    }
     fputs(passstr, master_fp);
     fclose(master_fp);
+
+  free_mm:
+    free(passstr);
+    free(new_passd);
+    free(salt);
+    free(hashed_password);
     return;
   }
 }
