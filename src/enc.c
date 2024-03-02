@@ -228,6 +228,8 @@ void __initcrux() {
     int opt = -1;
     char *new_passd = NULL;
     char *temp_passd = NULL;
+    hashed_pass_t *pass_hashWsalt;
+
     if (access("password.db", F_OK) == 0) {
       fprintf(stdout, "There is a PASSWORD_DB found...\n");
       fprintf(stdout, "Would you like to create a backup [Y/N]\n");
@@ -243,17 +245,10 @@ void __initcrux() {
 
     FILE *master_fp;
 
-    new_passd = calloc(PASSLENGTH + 1, sizeof(char));
-    temp_passd = calloc(PASSLENGTH + 1, sizeof(char));
+    new_passd = calloc(PASSLENGTH, sizeof(char));
+    temp_passd = calloc(PASSLENGTH, sizeof(char));
 
-    char *hashed_password = calloc(crypto_pwhash_STRBYTES, sizeof(char));
-    unsigned char *salt =
-        calloc(crypto_pwhash_SALTBYTES, sizeof(unsigned char));
-    char *passstr = malloc(
-        sizeof(char) * (crypto_pwhash_STRBYTES + crypto_pwhash_SALTBYTES + 1));
-
-    if (hashed_password == NULL || salt == NULL || new_passd == NULL ||
-        temp_passd == NULL) {
+    if (new_passd == NULL || temp_passd == NULL) {
       perror("Calloc");
       return;
     }
@@ -269,22 +264,24 @@ void __initcrux() {
 
     if (strcmp(new_passd, temp_passd) != 0) {
       fprintf(stderr, "Password Do Not Match\n");
-      return;
+      goto free_mm;
     }
 
-    randombytes_buf(salt, sizeof salt);
+    randombytes_buf(pass_hashWsalt->salt, crypto_pwhash_SALTBYTES);
 
     if ((master_fp = fopen("auth.db", "wb")) == NULL) {
       perror("Fail To open AUTH_DB");
       goto free_mm;
     }
 
-    generate_key_pass_hash(NULL, hashed_password, new_passd, NULL, 1);
+    generate_key_pass_hash(NULL, pass_hashWsalt->password_hash, new_passd, NULL,
+                           1);
     if (sprintf(passstr, "%s%s", hashed_password, salt) < 0) {
       fprintf(stderr, "sprintf Failed\n");
       fclose(master_fp);
       return;
     }
+
     fputs(passstr, master_fp);
     fclose(master_fp);
 

@@ -26,8 +26,8 @@ typedef struct {
 } password_t;
 
 typedef struct {
-  unsigned char *password_hash;
-  unsigned char *salt;
+  char password_hash[PASS_HASH_LEN + 1];
+  unsigned char salt[SALT_HASH_LEN];
 } hashed_pass_t;
 
 void help();
