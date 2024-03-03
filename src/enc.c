@@ -1,4 +1,6 @@
 #include "cruxpass.h"
+#include <ctype.h>
+#include <readline/readline.h>
 #include <sodium/crypto_pwhash.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -221,46 +223,69 @@ int create_new_master_passd(char *master_passd) {
   }
   return EXIT_SUCCESS;
 }
+static void backup_choice(void) {
+  char opt;
+
+  do {
+    printf("Do you want to rename or delete the password database (R/D)? ");
+    fflush(stdout);              /* Flush standard output before reading input*/
+    opt = tolower(fgetc(stdin)); /* Read character and convert to lowercase */
+
+    if (opt == 'r' || opt == 'd') {
+      break;
+    } else {
+      printf("Invalid input. Please enter 'Y' or 'N'.\n");
+    }
+  } while (1);
+
+  if (opt == 'r') {
+    if (rename("password.db", "password_backup.db") != 0) {
+      perror("Error renaming file");
+      return;
+    }
+    printf("Password database renamed successfully.\n");
+  } else {
+    if (remove("password.db") != 0) {
+      perror("Error deleting file");
+      return;
+    }
+    printf("Password database deleted successfully.\n");
+  }
+}
 
 void __initcrux() {
   //[TODO]: createa getpass function
   if (access("auth.db", F_OK) != 0) {
-    int opt = -1;
     char *new_passd = NULL;
     char *temp_passd = NULL;
-    hashed_pass_t *pass_hashWsalt;
+    hashed_pass_t *pass_hashWsalt = NULL;
 
     if (access("password.db", F_OK) == 0) {
       fprintf(stdout, "There is a PASSWORD_DB found...\n");
-      fprintf(stdout, "Would you like to create a backup [Y/N]\n");
-      do {
-        opt = getchar();
-
-      } while (opt != 'Y' || opt != 'N');
+      backup_choice();
     }
-    if (opt == 'Y')
-      rename("password.db", "password_backup.db");
-    else
-      remove("password.db");
-
     FILE *master_fp;
 
     new_passd = calloc(PASSLENGTH, sizeof(char));
     temp_passd = calloc(PASSLENGTH, sizeof(char));
+    pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
 
-    if (new_passd == NULL || temp_passd == NULL) {
+    if (pass_hashWsalt == NULL) {
       perror("Calloc");
       return;
     }
 
     fprintf(stdout, "Create a new Master Password\n");
-    new_passd = getpass("New Password: ");
+    printf("New Password: ");
+
+    fgets(new_passd, PASSLENGTH, stdin);
     if (strlen(new_passd) > PASSLENGTH) {
       fprintf(stderr, "Password Too Long\n");
       return;
     }
 
-    temp_passd = getpass("Confirm New Password: ");
+    printf("Confirm Password: ");
+    fgets(temp_passd, PASSLENGTH, stdin);
 
     if (strcmp(new_passd, temp_passd) != 0) {
       fprintf(stderr, "Password Do Not Match\n");
@@ -274,22 +299,18 @@ void __initcrux() {
       goto free_mm;
     }
 
+    new_passd[strlen(new_passd) - 1] = '\0';
     generate_key_pass_hash(NULL, pass_hashWsalt->password_hash, new_passd, NULL,
                            1);
-    if (sprintf(passstr, "%s%s", hashed_password, salt) < 0) {
-      fprintf(stderr, "sprintf Failed\n");
-      fclose(master_fp);
-      return;
-    }
 
-    fputs(passstr, master_fp);
+    fwrite(pass_hashWsalt, sizeof(hashed_pass_t), 1, master_fp);
     fclose(master_fp);
+    goto free_mm;
 
   free_mm:
-    free(passstr);
     free(new_passd);
-    free(salt);
-    free(hashed_password);
+    free(temp_passd);
+    free(pass_hashWsalt);
     return;
   }
 }
