@@ -41,7 +41,7 @@ static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
   return EXIT_SUCCESS;
 }
 
-static int encrypt(
+int encrypt(
     const char *target_file, const char *source_file,
     const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
   unsigned char buf_in[CHUNK_SIZE];
@@ -74,7 +74,7 @@ static int encrypt(
   return EXIT_SUCCESS;
 }
 
-static int decrypt(
+int decrypt(
     const char *target_file, const char *source_file,
     const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
 
@@ -136,6 +136,11 @@ int authenticate(char *master_passd) {
 
   char hashed_password[crypto_pwhash_STRBYTES];
   int hash_read = 0;
+  int pp[2];
+  if (pipe(pp) == -1) {
+    perror("pipes");
+    return EXIT_FAILURE;
+  }
   if (access("auth.db", F_OK) == 0) {
     FILE *master_fp;
     if ((master_fp = fopen("auth.db", "rb")) != NULL) {
@@ -254,7 +259,7 @@ static void backup_choice(void) {
 }
 
 void __initcrux() {
-  //[TODO]: createa getpass function
+  // [TODO]: createa getpass function
   if (access("auth.db", F_OK) != 0) {
     char *new_passd = NULL;
     char *temp_passd = NULL;

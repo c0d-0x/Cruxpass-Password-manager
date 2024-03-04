@@ -97,10 +97,16 @@ int save_password(password_t *password, FILE *password_db) {
   return EXIT_SUCCESS;
 }
 
-/// @brief List all passwords stored in the password_db
-/// @param password_db
-/// @return void
+/**
+ * @brief List all passwords stored in the password_db
+ * @param password_db
+ * @return void
+ */
 void list_all_passwords(FILE *password_db) {
+  // generate_key_pass_hash(key, NULL, master_passd, salt, 0);
+
+  // decrypt("password.db", "temp_password.db", )
+
   if ((password_db = fopen("password.db", "rb")) == NULL) {
     perror("Fail to read PASSWORD_DB");
     return;

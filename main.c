@@ -2,8 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 FILE *password_db;
+char *master_passd = NULL;
+int pp[2];
+
+char *getpass_custom(void) {
+  char *temp_passd = calloc(PASSLENGTH, sizeof(char));
+  if (temp_passd == NULL) {
+    perror("calloc");
+    return NULL;
+  }
+  printf("Master Password: ");
+  temp_passd = fgets(master_passd, PASSLENGTH, stdin);
+  master_passd[strlen(master_passd) - 1] = '\0';
+  if (strlen(temp_passd) < 8) {
+    fprintf(stdin, "Invalid Password: password too short\n");
+    return NULL;
+  }
+  return temp_passd;
+}
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -51,6 +70,15 @@ int main(int argc, char *argv[]) {
     __initcrux();
 
     // Authenication[TODO]
+    if ((master_passd = getpass_custom()) == NULL)
+      return EXIT_FAILURE;
+    if (pipe(pp) == -1) {
+      perror("PIPE");
+      return EXIT_FAILURE;
+    }
+    if (authentication(master_passd) != 0)
+      return EXIT_FAILURE;
+
     list_all_passwords(password_db);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
@@ -93,17 +121,7 @@ int main(int argc, char *argv[]) {
 
   } else if (strncmp(argv[1], "-n", 3) == 0) {
 
-    char *master_passd = NULL;
-    master_passd = calloc(PASSLENGTH, sizeof(char));
-    if (master_passd == NULL) {
-      perror("calloc");
-      return EXIT_FAILURE;
-    }
-    printf("Master Password: ");
-    master_passd = fgets(master_passd, PASSLENGTH, stdin);
-    master_passd[strlen(master_passd) - 1] = '\0';
-    if (strlen(master_passd) < 8) {
-      fprintf(stdin, "Invalid Password\n");
+    if ((master_passd = getpass_custom()) == NULL) {
       return EXIT_FAILURE;
     }
 

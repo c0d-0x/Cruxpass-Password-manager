@@ -37,11 +37,25 @@ int delete_password(FILE *, size_t);
 int save_password(password_t *password,
                   FILE *database_ptr); // takes in random_password as argument
                                        // then saves in a database.
-int authentication(
-    void *master_passd); // takes in a an address of the master password.
+/**
+ *  takes in a an address of the master password.
+ */
+int authentication(void *master_passdm);
 void list_all_passwords(FILE *database_ptr);
 int export_pass(FILE *database_ptr, const char *export_file);
 void import_pass(FILE *database_ptr, const char *import_file);
 int create_new_master_passd(char *master_passd);
+
+static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
+                                  char *new_passd, unsigned char *salt,
+                                  int tag);
+
+int decrypt(
+    const char *target_file, const char *source_file,
+    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]);
+
+int encrypt(
+    const char *target_file, const char *source_file,
+    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]);
 
 #endif
