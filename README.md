@@ -38,7 +38,7 @@ make
 Use code with caution. Learn more
 Run the program:
 Bash
-./cruxPass <option> <argument>
+./bin/cruxPass <option> <argument>
 Use code with caution. Learn more
 
 ## Security Considerations
@@ -60,10 +60,10 @@ cruxPass is licensed under the **MIT License**. See the LICENSE file for details
 For any questions or feedback, please contact <c0d_0x007@proton.me>.
 
 ## What I HAve Learned
-- string manuplation
-    - Tokenization
-    - 
 
+- string manuplation
+  - Tokenization
+  -
 
 ## Additional Notes
 
