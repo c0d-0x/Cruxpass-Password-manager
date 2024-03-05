@@ -1,6 +1,5 @@
 #include "cruxpass.h"
 #include <ctype.h>
-#include <readline/readline.h>
 #include <sodium/crypto_pwhash.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,12 +58,21 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
 int encrypt(
     const char *target_file, const char *source_file,
     const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
-  unsigned char buf_in[CHUNK_SIZE];
 
-  unsigned char
-      buf_out[CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES];
+  unsigned char *buf_in = malloc(sizeof(char) * CHUNK_SIZE);
 
-  unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
+  unsigned char *buf_out =
+      malloc(sizeof(char) *
+             (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
+
+  unsigned char *header = malloc(
+      sizeof(char) * (crypto_secretstream_xchacha20poly1305_HEADERBYTES));
+
+  if (buf_in == NULL || buf_out == NULL || header == NULL) {
+    perror("Memory Allocation Fail");
+    return EXIT_FAILURE;
+  }
+
   crypto_secretstream_xchacha20poly1305_state st;
 
   FILE *fp_target, *fp_source;
@@ -85,7 +93,11 @@ int encrypt(
                                                rlen, NULL, 0, tag);
     fwrite(buf_out, 1, (size_t)out_len, fp_target);
   } while (!eof);
-  cleanup(fp_source, fp_target);
+  fclose(fp_target);
+  fclose(fp_source);
+  free(buf_out);
+  free(buf_in);
+  free(header);
   return EXIT_SUCCESS;
 }
 
@@ -93,12 +105,19 @@ int decrypt(
     const char *target_file, const char *source_file,
     const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
 
-  unsigned char
-      buf_in[CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES];
+  unsigned char *buf_in =
+      malloc(sizeof(char) *
+             (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
 
-  unsigned char buf_out[CHUNK_SIZE];
-  unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
+  unsigned char *buf_out = malloc(sizeof(char) * CHUNK_SIZE);
+  unsigned char *header =
+      malloc(sizeof(char) * crypto_secretstream_xchacha20poly1305_HEADERBYTES);
   crypto_secretstream_xchacha20poly1305_state st;
+
+  if (buf_in == NULL || buf_out == NULL || header == NULL) {
+    perror("Memory Allocation Fail");
+    return EXIT_FAILURE;
+  }
 
   FILE *fp_target, *fp_source;
   unsigned long long out_len;
@@ -139,6 +158,11 @@ int decrypt(
     fwrite(buf_out, 1, (size_t)out_len, fp_target);
   } while (!eof);
 
+  fclose(fp_target);
+  fclose(fp_source);
+  free(buf_out);
+  free(buf_in);
+  free(header);
   return EXIT_SUCCESS;
 }
 
@@ -197,7 +221,6 @@ int create_new_master_passd(char *master_passd) {
 
     char passstr[crypto_pwhash_STRBYTES + crypto_pwhash_SALTBYTES + 2];
     unsigned char salt[crypto_pwhash_SALTBYTES];
-    unsigned char old_salt[crypto_pwhash_SALTBYTES];
     unsigned char key[KEY_LEN];
 
     randombytes_buf(salt, sizeof salt);

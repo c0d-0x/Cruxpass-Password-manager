@@ -182,12 +182,13 @@ void list_all_passwords(FILE *password_db) {
   free(password);
 }
 
-/// @brief exports passwords from the password_db to a csv file
-/// @param password_db
-/// @param export_file
-/// @return 0 on success
+/**
+ * @brief exports passwords from the password_db to a csv file
+ * @param password_db
+ * @param export_file
+ * @return 0 on success
+ */
 int export_pass(FILE *password_db, const char *export_file) {
-  // Authenticate [TODO]
   unsigned char *key;
   if ((key = decryption_logic(password_db, 1)) == NULL) {
     fprintf(stderr, "could not generate key\n");
@@ -197,11 +198,6 @@ int export_pass(FILE *password_db, const char *export_file) {
   FILE *fp;
   if ((fp = fopen(export_file, "wb")) == NULL) {
     perror("Fail to Export");
-    return EXIT_FAILURE;
-  }
-
-  if ((password_db = fopen("password.db", "rb")) == NULL) {
-    perror("Fail to open PASSWORD_DB");
     return EXIT_FAILURE;
   }
 
@@ -219,7 +215,7 @@ int export_pass(FILE *password_db, const char *export_file) {
   }
 
   fclose(fp);
-  fclose(password_db);
+  encryption_logic(key);
   free(password);
   return EXIT_SUCCESS;
 }
@@ -258,8 +254,9 @@ void import_pass(FILE *password_db, const char *import_file) {
     perror("Fail to import passwords");
   }
 
-  if ((password_db = fopen("password.db", "ab")) == NULL) {
-    perror("Fail to open PASSWORD_DB");
+  unsigned char *key;
+  if ((key = decryption_logic(password_db, 1)) == NULL) {
+    fprintf(stderr, "could not generate key\n");
     return;
   }
 
@@ -309,7 +306,7 @@ void import_pass(FILE *password_db, const char *import_file) {
     line_number++;
   }
   fclose(fp);
-  fclose(password_db);
+  encryption_logic(key);
   free(password);
 }
 
@@ -330,8 +327,9 @@ int delete_password(FILE *password_db, size_t id) {
     return EXIT_FAILURE;
   }
 
-  if ((password_db = fopen("password.db", "rb")) == NULL) {
-    perror("Fail to open PASSWORD_DB");
+  unsigned char *key;
+  if ((key = decryption_logic(password_db, 1)) == NULL) {
+    fprintf(stderr, "could not generate key\n");
     return EXIT_FAILURE;
   }
 
@@ -357,8 +355,9 @@ int delete_password(FILE *password_db, size_t id) {
   fclose(temp_bin);
 
   if (password_deleted) {
-    remove("password.db");
-    rename(".temp.db", "password.db");
+    remove("temp_password.db");
+    rename(".temp.db", "temp_password.db");
+    encryption_logic(key);
   } else {
     remove(".temp.db");
     return EXIT_FAILURE;
