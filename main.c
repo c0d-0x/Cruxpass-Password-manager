@@ -7,7 +7,6 @@
 FILE *password_db;
 char *master_passd = NULL;
 
-
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     help();
@@ -55,12 +54,6 @@ int main(int argc, char *argv[]) {
 
     // Authenication[TODO]
     if ((master_passd = getpass_custom()) == NULL)
-      return EXIT_FAILURE;
-    if (pipe(pp) == -1) {
-      perror("PIPE");
-      return EXIT_FAILURE;
-    }
-    if (authentication(master_passd) != 0)
       return EXIT_FAILURE;
 
     list_all_passwords(password_db);

@@ -27,9 +27,8 @@ char *getpass_custom(void) {
   return temp_passd;
 }
 
-static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
-                                  char *new_passd, unsigned char *salt,
-                                  int tag) {
+int generate_key_pass_hash(unsigned char *key, char *hashed_password,
+                           char *new_passd, unsigned char *salt, int tag) {
 
   switch (tag) {
 
@@ -143,41 +142,36 @@ int decrypt(
   return EXIT_SUCCESS;
 }
 
-int authenticate(char *master_passd) {
+hashed_pass_t *authenticate(char *master_passd) {
   /* [TODO:]
    * hash the passd str
    * cmp it with the saved passd hash
    * if correct use the password to decrypt db
    */
 
-  char hashed_password[crypto_pwhash_STRBYTES];
+  hashed_pass_t *hashed_password = calloc(1, sizeof(hashed_pass_t));
   int hash_read = 0;
-  int pp[2];
-  if (pipe(pp) == -1) {
-    perror("pipes");
-    return EXIT_FAILURE;
-  }
   if (access("auth.db", F_OK) == 0) {
     FILE *master_fp;
     if ((master_fp = fopen("auth.db", "rb")) != NULL) {
-      hash_read = fread(hashed_password, sizeof(hashed_password), 1, master_fp);
+      hash_read = fread(hashed_password, sizeof(hashed_pass_t), 1, master_fp);
       if (!hash_read) {
         fprintf(stderr, "No master password found\n");
-        return EXIT_FAILURE;
+        return NULL;
       }
     }
   } else {
     perror("Fail To Authencate\n");
-    return EXIT_FAILURE;
+    return NULL;
   }
 
-  if (crypto_pwhash_str_verify(hashed_password, master_passd,
+  if (crypto_pwhash_str_verify(hashed_password->hash, master_passd,
                                strlen(master_passd)) != 0) {
     /* wrong password */
     fprintf(stderr, "Wrong Password...\n");
-    return EXIT_FAILURE;
+    return NULL;
   }
-  return EXIT_SUCCESS;
+  return hashed_password;
 }
 
 int create_new_master_passd(char *master_passd) {
@@ -321,8 +315,7 @@ void __initcrux() {
     }
 
     new_passd[strlen(new_passd) - 1] = '\0';
-    generate_key_pass_hash(NULL, pass_hashWsalt->password_hash, new_passd, NULL,
-                           1);
+    generate_key_pass_hash(NULL, pass_hashWsalt->hash, new_passd, NULL, 1);
 
     fwrite(pass_hashWsalt, sizeof(hashed_pass_t), 1, master_fp);
     fclose(master_fp);

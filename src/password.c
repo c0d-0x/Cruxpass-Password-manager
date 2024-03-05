@@ -1,4 +1,6 @@
 #include "cruxpass.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 static size_t set_id() {
   FILE *password_db;
@@ -69,17 +71,63 @@ char *random_password(void) {
   return password;
 }
 
-int save_password(password_t *password, FILE *password_db) {
-char * master_passd = 
-  if (authentication(master_passd) {
-  
-  }
-  if ((password_db = fopen("password.db", "ab")) == NULL) {
-    perror("Fail to open PASSWORD_DB");
-    return 1;
+/**
+ *decrypts a file and return a key for encryption,
+ * it also opens the decrypted password_db.
+ */
+unsigned char *decryption_logic(FILE *password_db, int option) {
+  char *master_passd = NULL;
+  char *tag;
+  switch (option) {
+  case 0:
+    tag = "wb";
+    break;
+  case 1:
+    tag = "rb";
+    break;
+  case 2:
+    tag = "ab";
+    break;
   }
 
-  // ... (decryption logic here)
+  unsigned char *key;
+  hashed_pass_t *hashed_password = NULL;
+  key = malloc(KEY_LEN);
+  if ((master_passd = getpass_custom()) == NULL) {
+    fprintf(stderr, "Fail to save password\n");
+    return NULL;
+  }
+  if ((hashed_password = authenticate(master_passd)) == NULL) {
+    fprintf(stderr, "Fail to save password");
+    return NULL;
+  }
+  generate_key_pass_hash(key, NULL, master_passd, hashed_password->salt, 0);
+  decrypt(".temp_password", "password.db", key);
+  if ((password_db = fopen(".temp_password.db", tag)) == NULL) {
+    perror("Fail to open PASSWORD_DB");
+    return NULL;
+  }
+  free(hashed_password);
+  free(master_passd);
+
+  return key;
+}
+
+static void encryption_logic(unsigned char *key) {
+  remove("password.db");
+  if (encrypt("password.db", ".temp_password.db", key) != 0) {
+    fprintf(stderr, "Fail to encrypt password_db\n");
+    return;
+  }
+  remove(".temp_password.db");
+}
+
+int save_password(password_t *password, FILE *password_db) {
+  unsigned char *key;
+  if ((key = decryption_logic(password_db, 2)) == NULL) {
+    fprintf(stderr, "could not generate key\n");
+    return EXIT_FAILURE;
+  }
 
   size_t id = set_id();
   if (id == 0) {
@@ -93,9 +141,8 @@ char * master_passd =
     fclose(password_db);
     return EXIT_FAILURE;
   }
-
-  // ... (encryption logic here)
-
+  encryption_logic(key);
+  free(key);
   fclose(password_db);
   return EXIT_SUCCESS;
 }
@@ -106,14 +153,13 @@ char * master_passd =
  * @return void
  */
 void list_all_passwords(FILE *password_db) {
-  // generate_key_pass_hash(key, NULL, master_passd, salt, 0);
 
-  // decrypt("password.db", "temp_password.db", )
-
-  if ((password_db = fopen("password.db", "rb")) == NULL) {
-    perror("Fail to read PASSWORD_DB");
+  unsigned char *key;
+  if ((key = decryption_logic(password_db, 1)) == NULL) {
+    fprintf(stderr, "could not generate key\n");
     return;
   }
+
   /**
    * A temp variable to print exactly the password word
    * without printing along it's username detail
@@ -131,7 +177,7 @@ void list_all_passwords(FILE *password_db) {
             password->id, password->username, password->passd,
             password->description);
   }
-
+  encryption_logic(key);
   fclose(password_db);
   free(password);
 }
@@ -142,6 +188,11 @@ void list_all_passwords(FILE *password_db) {
 /// @return 0 on success
 int export_pass(FILE *password_db, const char *export_file) {
   // Authenticate [TODO]
+  unsigned char *key;
+  if ((key = decryption_logic(password_db, 1)) == NULL) {
+    fprintf(stderr, "could not generate key\n");
+    return EXIT_FAILURE;
+  }
 
   FILE *fp;
   if ((fp = fopen(export_file, "wb")) == NULL) {
