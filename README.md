@@ -31,12 +31,11 @@ Clone this repository:
 ``` Bash
 
 git clone https://github.com/c0d-0x/Cruxpass-Password-manager
-Use code with caution. Learn more
+Use code with caution.
 Compile the code:
-Bash
 cd cruxPass
 make
-Use code with caution. Learn more
+
 Run the program:
 Bash
 ./bin/cruxPass <option> <argument>
