@@ -6,7 +6,7 @@
 
 FILE *password_db;
 char *master_passd = NULL;
-int pp[2];
+
 
 char *getpass_custom(void) {
   char *temp_passd = calloc(PASSLENGTH, sizeof(char));
