@@ -31,7 +31,7 @@ Clone this repository:
 ``` Bash
 
 git clone https://github.com/c0d-0x/Cruxpass-Password-manager
-Use code with caution.
+
 Compile the code:
 cd cruxPass
 make
