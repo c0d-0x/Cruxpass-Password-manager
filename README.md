@@ -16,14 +16,14 @@ cruxPass <option> <argument>
 Use code with caution. Learn more
 Available options:
 
-- -c: \<username\>: Search for a password by username
+- -n:  creates a new master password
 - -d: \<password id\>: Deletes a password by id
 - -e: \<file name\>: Export all saved passwords to a csv format
 - -h: Display help information
 - -i: \<file name\>: Import passwords from a csv file
 - -l: List all saved passwords
-- -r: Generate a random password without storing it
-- -s: \<password\> \<username\>: Generate a password and store it for the specified username
+- -r: Generate a random password without storing it of 35 characters
+- -s: \<password\> \<username\> \<discryption\>: Generate a password and store it for the specified username
 
 ## Installation
 
@@ -58,12 +58,6 @@ cruxPass is licensed under the **MIT License**. See the LICENSE file for details
 ## Contact
 
 For any questions or feedback, please contact <c0d_0x007@proton.me>.
-
-## What I HAve Learned
-
-- string manuplation
-  - Tokenization
-  -
 
 ## Additional Notes
 
