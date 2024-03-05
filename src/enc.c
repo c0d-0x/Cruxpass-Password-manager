@@ -11,6 +11,22 @@ static void cleanup(FILE *source_file, FILE *target_file) {
   fclose(target_file);
 }
 
+char *getpass_custom(void) {
+  char *temp_passd = calloc(PASSLENGTH, sizeof(char));
+  if (temp_passd == NULL) {
+    perror("calloc");
+    return NULL;
+  }
+  printf("Master Password: ");
+  fgets(temp_passd, PASSLENGTH, stdin);
+  temp_passd[strlen(temp_passd) - 1] = '\0';
+  if (strlen(temp_passd) < 8) {
+    fprintf(stdin, "Invalid Password: password too short\n");
+    return NULL;
+  }
+  return temp_passd;
+}
+
 static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
                                   char *new_passd, unsigned char *salt,
                                   int tag) {

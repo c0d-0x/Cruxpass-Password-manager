@@ -39,8 +39,7 @@ void help() {
   printf(" -h: shows this help\n -s: stores a password\n -r: "
          "generates "
          "a random password and takes no arguments\n -d: deletes a password by "
-         "id\n -c: searches a password "
-         "by username\n -l: list "
+         "id\n -n: creates a new master password\n -l: list "
          "all saved "
          "passwords and takes no arguments \n -e: Exports all passwords to a "
          "csv file\n -i: imports "
@@ -71,6 +70,10 @@ char *random_password(void) {
 }
 
 int save_password(password_t *password, FILE *password_db) {
+char * master_passd = 
+  if (authentication(master_passd) {
+  
+  }
   if ((password_db = fopen("password.db", "ab")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     return 1;

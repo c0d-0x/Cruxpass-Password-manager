@@ -45,6 +45,7 @@ void list_all_passwords(FILE *database_ptr);
 int export_pass(FILE *database_ptr, const char *export_file);
 void import_pass(FILE *database_ptr, const char *import_file);
 int create_new_master_passd(char *master_passd);
+char *getpass_custom(void);
 
 static int generate_key_pass_hash(unsigned char *key, char *hashed_password,
                                   char *new_passd, unsigned char *salt,

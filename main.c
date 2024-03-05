@@ -8,22 +8,6 @@ FILE *password_db;
 char *master_passd = NULL;
 
 
-char *getpass_custom(void) {
-  char *temp_passd = calloc(PASSLENGTH, sizeof(char));
-  if (temp_passd == NULL) {
-    perror("calloc");
-    return NULL;
-  }
-  printf("Master Password: ");
-  temp_passd = fgets(master_passd, PASSLENGTH, stdin);
-  master_passd[strlen(master_passd) - 1] = '\0';
-  if (strlen(temp_passd) < 8) {
-    fprintf(stdin, "Invalid Password: password too short\n");
-    return NULL;
-  }
-  return temp_passd;
-}
-
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     help();
