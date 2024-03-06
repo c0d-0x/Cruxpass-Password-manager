@@ -93,7 +93,7 @@ unsigned char *decryption_logic(FILE *password_db, int option) {
   unsigned char *key;
   hashed_pass_t *hashed_password = NULL;
   key = malloc(KEY_LEN);
-  if ((master_passd = getpass_custom()) == NULL) {
+  if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
     fprintf(stderr, "Fail to save password\n");
     return NULL;
   }

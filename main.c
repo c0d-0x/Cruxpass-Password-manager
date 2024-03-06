@@ -53,9 +53,6 @@ int main(int argc, char *argv[]) {
     __initcrux();
 
     // Authenication[TODO]
-    if ((master_passd = getpass_custom()) == NULL)
-      return EXIT_FAILURE;
-
     list_all_passwords(password_db);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
@@ -98,7 +95,7 @@ int main(int argc, char *argv[]) {
 
   } else if (strncmp(argv[1], "-n", 3) == 0) {
 
-    if ((master_passd = getpass_custom()) == NULL) {
+    if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
       return EXIT_FAILURE;
     }
 
