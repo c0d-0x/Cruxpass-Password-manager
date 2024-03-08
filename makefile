@@ -10,7 +10,7 @@ MAIN=main.c
 all:$(BIN)
 
 $(BIN):$(OBJFILES) 
-	$(CC) $(CFLAGS) $(LIBS) -g $(MAIN) -o $@ $^
+	$(CC) $(CFLAGS) $(LIBS) $(MAIN) -o $@ $^
 
 $(OBJFILES):$(CFILES) 
 	$(CC) $(CFLAGS) -c $^

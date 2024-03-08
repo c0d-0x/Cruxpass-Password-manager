@@ -18,14 +18,16 @@
 #define PASS_HASH_LEN crypto_pwhash_STRBYTES
 #define SALT_HASH_LEN crypto_pwhash_SALTBYTES
 
-typedef struct {
+typedef struct
+{
   size_t id;
   char passd[PASSLENGTH + 1];
   char username[ACCLENGTH + 1];
   char description[DESCLENGTH + 1];
 } password_t;
 
-typedef struct {
+typedef struct
+{
   char hash[PASS_HASH_LEN + 1];
   unsigned char salt[SALT_HASH_LEN];
 } hashed_pass_t;
@@ -38,17 +40,58 @@ int save_password(password_t *password,
                   FILE *database_ptr); // takes in random_password as argument
                                        // then saves in a database.
 /**
- *  takes in a an address of the master password.
+ * Takes in a master password and returns a hashed password.
+ * @param master_passd the master password to hash
+ * @return a hashed password
  */
 hashed_pass_t *authenticate(char *master_passdm);
+
+/**
+ * Takes in a hashed password and returns a password.
+ * @param hashed_passd the hashed password
+ * @return a password
+ */
 void list_all_passwords(FILE *database_ptr);
+
+/**
+ * Exports a password from the database to a file.
+ * @param database_ptr the file pointer to the database
+ * @param export_file the file path to export the password to
+ * @return 0 on success, 1 on failure
+ */
 int export_pass(FILE *database_ptr, const char *export_file);
+
+/**
+ * Exports a password from the database to a file.
+ *
+ * @param database_ptr the file pointer to the database
+ * @param export_file the file path to export the password to
+ * @return 0 on success, 1 on failure
+ */
 void import_pass(FILE *database_ptr, const char *import_file);
+
+/**
+ * Creates a new master password for the database.
+ *
+ * @param master_passd the master password to hash
+ * @return 0 on success, 1 on failure
+ */
 int create_new_master_passd(char *master_passd);
 char *getpass_custom(char *);
 
+/**
+ * Generates a key or  password hash for encryption and decryption.
+ *
+ * @param key a pointer to a buffer to store the encryption key
+ * @param hashed_password a pointer to a buffer to store the hashed password
+ * @param new_passd the plaintext password to hash
+ * @param salt a pointer to the salt for key generation
+ * @param tag a flag indicating whether to generate a decryption key or not
+ * @return 0 on success, 1 on failure
+ */
 int generate_key_pass_hash(unsigned char *key, char *hashed_password,
-                           char *new_passd, unsigned char *salt, int tag);
+                           const char *const new_passd, unsigned char *salt,
+                           int tag);
 
 int decrypt(
     const char *target_file, const char *source_file,

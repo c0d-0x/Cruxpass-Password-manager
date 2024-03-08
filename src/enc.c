@@ -6,21 +6,19 @@
 #include <string.h>
 #include <unistd.h>
 
-// static void cleanup(FILE *source_fp, FILE *target_fp) {
-//   fclose(source_fp);
-//   fclose(target_fp);
-// }
-
-char *getpass_custom(char *prompt) {
+char *getpass_custom(char *prompt)
+{
   char *temp_passd = calloc(PASSLENGTH, sizeof(char));
-  if (temp_passd == NULL) {
+  if (temp_passd == NULL)
+  {
     perror("calloc");
     return NULL;
   }
   printf("%s", prompt);
   fgets(temp_passd, PASSLENGTH, stdin);
   temp_passd[strlen(temp_passd) - 1] = '\0';
-  if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {
+  if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH)
+  {
     fprintf(stdin, "Invalid Password\n");
     return NULL;
   }
@@ -28,21 +26,26 @@ char *getpass_custom(char *prompt) {
 }
 
 int generate_key_pass_hash(unsigned char *key, char *hashed_password,
-                           char *new_passd, unsigned char *salt, int tag) {
+                           const char *const new_passd, unsigned char *salt,
+                           int tag)
+{
 
-  if (sodium_init() == -1) {
+  if (sodium_init() == -1)
+  {
     return EXIT_FAILURE;
   }
 
-  switch (tag) {
+  switch (tag)
+  {
 
   case 0:
     if (crypto_pwhash(key, sizeof(key), new_passd, strlen(new_passd), salt,
                       crypto_pwhash_OPSLIMIT_INTERACTIVE,
                       crypto_pwhash_MEMLIMIT_INTERACTIVE,
-                      crypto_pwhash_ALG_DEFAULT) != 0) {
+                      crypto_pwhash_ALG_DEFAULT) != 0)
+    {
       /* out of memory */
-      fprintf(stderr, "Could not Generate New Password\n");
+      perror("Could not Generate key\n");
       return EXIT_FAILURE;
     }
     break;
@@ -50,9 +53,10 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
 
     if (crypto_pwhash_str(hashed_password, new_passd, strlen(new_passd),
                           crypto_pwhash_OPSLIMIT_SENSITIVE,
-                          crypto_pwhash_MEMLIMIT_SENSITIVE) != 0) {
+                          crypto_pwhash_MEMLIMIT_SENSITIVE) != 0)
+    {
       /* out of memory */
-      fprintf(stderr, "Fail to hash master password\n");
+      perror("Could not Generate key\n");
       return EXIT_FAILURE;
     }
     break;
@@ -62,9 +66,11 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
 
 int encrypt(
     const char *target_file, const char *source_file,
-    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
+    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES])
+{
 
-  if (sodium_init() == -1) {
+  if (sodium_init() == -1)
+  {
     return EXIT_FAILURE;
   }
 
@@ -77,7 +83,8 @@ int encrypt(
   unsigned char *header = malloc(
       sizeof(char) * (crypto_secretstream_xchacha20poly1305_HEADERBYTES));
 
-  if (buf_in == NULL || buf_out == NULL || header == NULL) {
+  if (buf_in == NULL || buf_out == NULL || header == NULL)
+  {
     perror("Memory Allocation Fail");
     return EXIT_FAILURE;
   }
@@ -94,7 +101,8 @@ int encrypt(
   fp_target = fopen(target_file, "wb");
   crypto_secretstream_xchacha20poly1305_init_push(&st, header, key);
   fwrite(header, 1, sizeof header, fp_target);
-  do {
+  do
+  {
     rlen = fread(buf_in, 1, sizeof buf_in, fp_source);
     eof = feof(fp_source);
     tag = eof ? crypto_secretstream_xchacha20poly1305_TAG_FINAL : 0;
@@ -112,9 +120,11 @@ int encrypt(
 
 int decrypt(
     const char *target_file, const char *source_file,
-    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
+    const unsigned char key[KEY_LEN])
+{
 
-  if (sodium_init() == -1) {
+  if (sodium_init() == -1)
+  {
     return EXIT_FAILURE;
   }
 
@@ -128,7 +138,8 @@ int decrypt(
       malloc(sizeof(char) * crypto_secretstream_xchacha20poly1305_HEADERBYTES);
   crypto_secretstream_xchacha20poly1305_state st;
 
-  if (buf_in == NULL || buf_out == NULL || header == NULL) {
+  if (buf_in == NULL || buf_out == NULL || header == NULL)
+  {
     perror("Memory Allocation Fail");
     return EXIT_FAILURE;
   }
@@ -142,24 +153,32 @@ int decrypt(
   fp_source = fopen(source_file, "rb");
   fp_target = fopen(target_file, "wb");
   fread(header, 1, sizeof header, fp_source);
-  if (crypto_secretstream_xchacha20poly1305_init_pull(&st, header, key) != 0) {
+  if (crypto_secretstream_xchacha20poly1305_init_pull(&st, header, key) != 0)
+  {
     goto free_mem;
   }
-  do {
+  do
+  {
     rlen = fread(buf_in, 1, sizeof buf_in, fp_source);
     eof = feof(fp_source);
     if (crypto_secretstream_xchacha20poly1305_pull(
-            &st, buf_out, &out_len, &tag, buf_in, rlen, NULL, 0) != 0) {
+            &st, buf_out, &out_len, &tag, buf_in, rlen, NULL, 0) != 0)
+    {
       goto free_mem; /* corrupted chunk */
     }
-    if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL) {
-      if (!eof) {
+    if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL)
+    {
+      if (!eof)
+      {
         goto free_mem; /* end of stream reached before the end of the
                         * file
                         */
       }
-    } else { /* not the final chunk yet */
-      if (eof) {
+    }
+    else
+    { /* not the final chunk yet */
+      if (eof)
+      {
         goto free_mem;
         /* end of file reached before the end of the stream */
       }
@@ -176,35 +195,45 @@ free_mem:
   return ret;
 }
 
-hashed_pass_t *authenticate(char *master_passd) {
+hashed_pass_t *authenticate(char *master_passd)
+{
 
   /* [TODO:]
    * hash the passd str
    * cmp it with the saved passd hash
    * if correct use the password to decrypt db
    */
-  if (sodium_init() == -1) {
+  if (sodium_init() == -1)
+  {
     return NULL;
   }
   hashed_pass_t *hashed_password = malloc(sizeof(hashed_pass_t));
   int hash_read = 0;
   FILE *master_fp;
-  if (access("auth.db", F_OK) == 0) {
-    if ((master_fp = fopen("auth.db", "rb")) != NULL) {
+  if (access("auth.db", F_OK) == 0)
+  {
+    if ((master_fp = fopen("auth.db", "rb")) != NULL)
+    {
+
       hash_read = fread(hashed_password, sizeof(hashed_pass_t), 1, master_fp);
-      if (!hash_read) {
+      if (!hash_read)
+      {
         fprintf(stderr, "No master password found\n");
         free(hashed_password);
         return NULL;
       }
     }
-  } else {
+  }
+  else
+  {
     perror("Fail To Authencate\n");
     return NULL;
   }
 
   if (crypto_pwhash_str_verify(hashed_password->hash, master_passd,
-                               strlen(master_passd)) != 0) {
+                               strlen(master_passd)) != 0)
+  {
+
     /* wrong password */
     fprintf(stderr, "Wrong Password...\n");
     return NULL;
@@ -213,7 +242,8 @@ hashed_pass_t *authenticate(char *master_passd) {
   return hashed_password;
 }
 
-int create_new_master_passd(char *master_passd) {
+int create_new_master_passd(char *master_passd)
+{
   int ret = 1;
   char *new_passd;
   char *temp_passd;
@@ -222,22 +252,26 @@ int create_new_master_passd(char *master_passd) {
   hashed_pass_t *new_hashed_password = NULL;
   FILE *master_fp = NULL;
 
-  if ((old_hashed_password = authenticate(master_passd)) == NULL) {
+  if ((old_hashed_password = authenticate(master_passd)) == NULL)
+  {
     return EXIT_FAILURE;
   }
 
   new_passd = getpass_custom("New Password: ");
-  if (new_passd == NULL) {
+  if (new_passd == NULL)
+  {
     return EXIT_FAILURE;
   }
 
   temp_passd = getpass_custom("Confirm New Password: ");
-  if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0) {
+  if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0)
+  {
 
     new_hashed_password = calloc(1, sizeof(hashed_pass_t));
-    key = malloc(sizeof(char) * KEY_LEN);
+    key = malloc(sizeof(unsigned char) * KEY_LEN);
 
-    if (new_hashed_password == NULL || key == NULL) {
+    if (new_hashed_password == NULL || key == NULL)
+    {
       fprintf(stderr, "Memory Allocation Fail\n");
       free(new_passd);
       free(temp_passd);
@@ -247,15 +281,18 @@ int create_new_master_passd(char *master_passd) {
 
     randombytes_buf(new_hashed_password->salt, sizeof(char) * SALT_HASH_LEN);
 
-    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+    if ((master_fp = fopen("auth.db", "wb")) == NULL)
+    {
       perror("Fail To open AUTH_DB");
       goto free_all;
     }
 
-    if (generate_key_pass_hash(NULL, new_hashed_password->hash, new_passd, NULL,
-                               1) != 0 ||
-        generate_key_pass_hash(key, NULL, master_passd,
-                               old_hashed_password->salt, 0) != 0) {
+    if (generate_key_pass_hash(NULL, (char *)new_hashed_password->hash,
+                               (const char *const)new_passd, NULL, 1) != 0 ||
+        generate_key_pass_hash(key, NULL, (const char *const)master_passd,
+                               (unsigned char *)old_hashed_password->salt,
+                               0) != 0)
+    {
       fprintf(stderr, "Fail to Create New Password\n");
       goto free_all;
     }
@@ -263,21 +300,25 @@ int create_new_master_passd(char *master_passd) {
     fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
     fclose(master_fp);
 
-    if (decrypt(".tmp_password.db", "password.db", key) != 0) {
+    if (decrypt(".tmp_password.db", "password.db", key) != 0)
+    {
       fprintf(stderr, "Fail to decrypt PASSWORD_DB\n");
       goto free_all;
     }
 
     if (generate_key_pass_hash(key, NULL, new_passd, new_hashed_password->salt,
-                               0) != 0) {
+                               0) != 0)
+    {
       fprintf(stderr, "Fail to Create New Password\n");
       remove(".temp_passord.db");
       goto free_all;
     }
     remove("password.db");
-    encrypt("password.db", ".tmp_password", key);
+    encrypt("password.db", ".tmp_password.db", key);
     remove(".tmp_password");
-  } else {
+  }
+  else
+  {
     fprintf(stderr, "Passwords do not march\n");
     return ret;
   }
@@ -291,29 +332,39 @@ free_all:
   return ret;
 }
 
-static void backup_choice(void) {
+static void backup_choice(void)
+{
   char opt;
 
-  do {
+  do
+  {
     printf("Do you want to rename or delete the password database (R/D)? ");
     fflush(stdout);              /* Flush standard output before reading input*/
     opt = tolower(fgetc(stdin)); /* Read character and convert to lowercase */
 
-    if (opt == 'r' || opt == 'd') {
+    if (opt == 'r' || opt == 'd')
+    {
       break;
-    } else {
+    }
+    else
+    {
       printf("Invalid input. Please enter 'Y' or 'N'.\n");
     }
   } while (1);
 
-  if (opt == 'r') {
-    if (rename("password.db", "password_backup.db") != 0) {
+  if (opt == 'r')
+  {
+    if (rename("password.db", "password_backup.db") != 0)
+    {
       perror("Error renaming file");
       return;
     }
     printf("Password database renamed successfully.\n");
-  } else {
-    if (remove("password.db") != 0) {
+  }
+  else
+  {
+    if (remove("password.db") != 0)
+    {
       perror("Error deleting file");
       return;
     }
@@ -321,14 +372,17 @@ static void backup_choice(void) {
   }
 }
 
-void __initcrux() {
+void __initcrux()
+{
   // [TODO]: createa getpass function
-  if (access("auth.db", F_OK) != 0) {
+  if (access("auth.db", F_OK) != 0)
+  {
     char *new_passd = NULL;
     char *temp_passd = NULL;
     hashed_pass_t *pass_hashWsalt = NULL;
 
-    if (access("password.db", F_OK) == 0) {
+    if (access("password.db", F_OK) == 0)
+    {
       fprintf(stdout, "There is a PASSWORD_DB found...\n");
       backup_choice();
     }
@@ -336,7 +390,8 @@ void __initcrux() {
 
     pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
 
-    if (pass_hashWsalt == NULL) {
+    if (pass_hashWsalt == NULL)
+    {
       perror("Calloc");
       return;
     }
@@ -344,26 +399,30 @@ void __initcrux() {
     fprintf(stdout, "Create a new Master Password\n");
 
     new_passd = getpass_custom("New Password: ");
-    if (new_passd == NULL) {
+    if (new_passd == NULL)
+    {
       return;
     }
 
     temp_passd = getpass_custom("Confirm Password: ");
 
-    if (strcmp(new_passd, temp_passd) != 0) {
+    if (strcmp(new_passd, temp_passd) != 0)
+    {
       fprintf(stderr, "Password Do Not Match\n");
       goto free_mm;
     }
 
     randombytes_buf(pass_hashWsalt->salt, crypto_pwhash_SALTBYTES);
 
-    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+    if ((master_fp = fopen("auth.db", "wb")) == NULL)
+    {
       perror("Fail To open AUTH_DB");
       goto free_mm;
     }
 
     if (generate_key_pass_hash(NULL, pass_hashWsalt->hash, new_passd, NULL,
-                               1) != 0) {
+                               1) != 0)
+    {
       fprintf(stderr, "Fail to generate Hash\n");
       goto free_mm;
     }
