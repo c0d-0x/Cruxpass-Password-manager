@@ -32,18 +32,12 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
     return EXIT_FAILURE;
   }
 
-  if (tag == 0) {
-    sodium_memzero(key, sizeof(unsigned char) * KEY_LEN);
-  } else {
-    sodium_memzero(hashed_password, sizeof(unsigned char) * PASS_HASH_LEN);
-  }
-
   switch (tag) {
 
   case 0:
-    if (crypto_pwhash(key, sizeof(unsigned char) * KEY_LEN, new_passd,
-                      strlen(new_passd), salt,
-                      crypto_pwhash_OPSLIMIT_INTERACTIVE,
+    unsigned char key_tmp[KEY_LEN];
+    if (crypto_pwhash(key_tmp, sizeof key_tmp, new_passd, strlen(new_passd),
+                      salt, crypto_pwhash_OPSLIMIT_INTERACTIVE,
                       crypto_pwhash_MEMLIMIT_INTERACTIVE,
                       crypto_pwhash_ALG_DEFAULT) != 0) {
       /* out of memory */
@@ -73,14 +67,14 @@ int encrypt(
     return EXIT_FAILURE;
   }
 
-  unsigned char *buf_in = calloc(sizeof(char), CHUNK_SIZE);
+  unsigned char *buf_in = malloc(sizeof(char) * CHUNK_SIZE);
 
   unsigned char *buf_out =
-      calloc(sizeof(char),
+      malloc(sizeof(char) *
              (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
 
-  unsigned char *header =
-      calloc(sizeof(char), (crypto_secretstream_xchacha20poly1305_HEADERBYTES));
+  unsigned char *header = malloc(
+      sizeof(char) * (crypto_secretstream_xchacha20poly1305_HEADERBYTES));
 
   if (buf_in == NULL || buf_out == NULL || header == NULL) {
     perror("Memory Allocation Fail");
@@ -127,9 +121,9 @@ int decrypt(const char *target_file, const char *source_file,
       malloc(sizeof(char) *
              (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
 
-  unsigned char *buf_out = calloc(sizeof(char), CHUNK_SIZE);
+  unsigned char *buf_out = malloc(sizeof(char) * CHUNK_SIZE);
   unsigned char *header =
-      calloc(sizeof(char), crypto_secretstream_xchacha20poly1305_HEADERBYTES);
+      malloc(sizeof(char) * crypto_secretstream_xchacha20poly1305_HEADERBYTES);
   crypto_secretstream_xchacha20poly1305_state st;
 
   if (buf_in == NULL || buf_out == NULL || header == NULL) {
@@ -241,7 +235,7 @@ int create_new_master_passd(char *master_passd) {
   if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0) {
 
     new_hashed_password = calloc(1, sizeof(hashed_pass_t));
-    key = calloc(sizeof(unsigned char), KEY_LEN);
+    key = malloc(sizeof(unsigned char) * KEY_LEN);
 
     if (new_hashed_password == NULL || key == NULL) {
       fprintf(stderr, "Memory Allocation Fail\n");
@@ -269,11 +263,6 @@ int create_new_master_passd(char *master_passd) {
 
     fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
     fclose(master_fp);
-
-    if (access("password.db", F_OK) != 0) {
-      perror("PASSWORD_DB not found");
-      return EXIT_FAILURE;
-    }
 
     if (decrypt(".tmp_password.db", "password.db", key) != 0) {
       fprintf(stderr, "Fail to decrypt PASSWORD_DB\n");

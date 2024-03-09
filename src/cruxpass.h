@@ -18,16 +18,14 @@
 #define PASS_HASH_LEN crypto_pwhash_STRBYTES
 #define SALT_HASH_LEN crypto_pwhash_SALTBYTES
 
-typedef struct
-{
+typedef struct {
   size_t id;
   char passd[PASSLENGTH + 1];
   char username[ACCLENGTH + 1];
   char description[DESCLENGTH + 1];
 } password_t;
 
-typedef struct
-{
+typedef struct {
   char hash[PASS_HASH_LEN + 1];
   unsigned char salt[SALT_HASH_LEN];
 } hashed_pass_t;

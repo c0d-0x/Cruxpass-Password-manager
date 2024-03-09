@@ -4,7 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 
-
 FILE *password_db;
 char *master_passd = NULL;
 
