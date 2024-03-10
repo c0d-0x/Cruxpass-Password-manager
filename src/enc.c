@@ -1,5 +1,6 @@
 #include "cruxpass.h"
 #include <ctype.h>
+#include <ncurses.h>
 #include <sodium/crypto_pwhash.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,9 +66,8 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
   return EXIT_SUCCESS;
 }
 
-int encrypt(
-    const char *target_file, const char *source_file,
-    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
+int encrypt(const char *target_file, const char *source_file,
+            const unsigned char key[KEY_LEN]) {
 
   if (sodium_init() == -1) {
     return EXIT_FAILURE;
@@ -147,6 +147,7 @@ int decrypt(const char *target_file, const char *source_file,
   fp_target = fopen(target_file, "wb");
   fread(header, 1, sizeof header, fp_source);
   if (crypto_secretstream_xchacha20poly1305_init_pull(&st, header, key) != 0) {
+    perror("Decrytion");
     goto free_mem;
   }
   do {
@@ -275,7 +276,7 @@ int create_new_master_passd(char *master_passd) {
       return EXIT_FAILURE;
     }
 
-    if (decrypt(".tmp_password.db", "password.db", key) != 0) {
+    if (decrypt(".temp_password.db", "password.db", key) != 0) {
       fprintf(stderr, "Fail to decrypt PASSWORD_DB\n");
       goto free_all;
     }
@@ -287,8 +288,8 @@ int create_new_master_passd(char *master_passd) {
       goto free_all;
     }
     remove("password.db");
-    encrypt("password.db", ".tmp_password.db", key);
-    remove(".tmp_password");
+    encrypt("password.db", ".temp_password.db", key);
+    remove(".temp_password.db");
   } else {
     fprintf(stderr, "Passwords do not march\n");
     return ret;

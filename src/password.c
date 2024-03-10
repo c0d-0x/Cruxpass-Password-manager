@@ -5,7 +5,7 @@
 
 static size_t set_id() {
   FILE *password_db;
-  if ((password_db = fopen("password.db", "rb")) == NULL) {
+  if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open password_db");
     return 0;
   }
@@ -104,9 +104,12 @@ static unsigned char *decryption_logic() {
 
   if (access("password.db", F_OK) != 0) {
     perror("PASSWORD_DB not found");
-    return NULL;
+    free(hashed_password);
+    free(master_passd);
+    return key;
   }
-  decrypt(".temp_password", "password.db", key);
+
+  decrypt(".temp_password.db", "password.db", key);
   free(hashed_password);
   free(master_passd);
 
@@ -163,6 +166,11 @@ void list_all_passwords(FILE *password_db) {
   if (key == NULL) {
     return;
   }
+
+  if (access(".temp_password.db", F_OK) != 0) {
+    return;
+  }
+
   password_t *password_s = NULL;
   password_s = calloc(1, sizeof(password_t));
   if (password_s == NULL) {
@@ -265,7 +273,8 @@ void import_pass(FILE *password_db, const char *import_file) {
   if ((key = decryption_logic()) == NULL) {
     return;
   }
-  if ((password_db = fopen(".temp_password.db", "ab")) == NULL) {
+
+  if ((password_db = fopen(".temp_password.db", "ab+")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     return;
   }
@@ -318,6 +327,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   fclose(password_db);
   encryption_logic(key);
   free(password);
+  return;
 }
 
 int delete_password(FILE *password_db, size_t id) {
