@@ -33,15 +33,10 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
     return EXIT_FAILURE;
   }
 
-  if (tag == 0) {
-    sodium_memzero(key, sizeof(unsigned char) * KEY_LEN);
-  } else {
-    sodium_memzero(hashed_password, sizeof(unsigned char) * PASS_HASH_LEN);
-  }
-
   switch (tag) {
 
   case 0:
+    sodium_memzero(key, sizeof(unsigned char) * KEY_LEN);
     if (crypto_pwhash(key, sizeof(unsigned char) * KEY_LEN, new_passd,
                       strlen(new_passd), salt,
                       crypto_pwhash_OPSLIMIT_INTERACTIVE,
@@ -53,6 +48,7 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
     }
     break;
   case 1:
+    sodium_memzero(hashed_password, sizeof(unsigned char) * PASS_HASH_LEN);
 
     if (crypto_pwhash_str(hashed_password, new_passd, strlen(new_passd),
                           crypto_pwhash_OPSLIMIT_SENSITIVE,
@@ -79,10 +75,9 @@ int encrypt(const char *target_file, const char *source_file,
       calloc(sizeof(char),
              (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
 
-  unsigned char *header =
-      calloc(sizeof(char), (crypto_secretstream_xchacha20poly1305_HEADERBYTES));
+  unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
 
-  if (buf_in == NULL || buf_out == NULL || header == NULL) {
+  if (buf_in == NULL || buf_out == NULL) {
     perror("Memory Allocation Fail");
     return EXIT_FAILURE;
   }
@@ -100,7 +95,7 @@ int encrypt(const char *target_file, const char *source_file,
   crypto_secretstream_xchacha20poly1305_init_push(&st, header, key);
   fwrite(header, 1, sizeof header, fp_target);
   do {
-    rlen = fread(buf_in, 1, sizeof buf_in, fp_source);
+    rlen = fread(buf_in, 1, sizeof header, fp_source);
     eof = feof(fp_source);
     tag = eof ? crypto_secretstream_xchacha20poly1305_TAG_FINAL : 0;
     crypto_secretstream_xchacha20poly1305_push(&st, buf_out, &out_len, buf_in,
@@ -111,7 +106,6 @@ int encrypt(const char *target_file, const char *source_file,
   fclose(fp_source);
   free(buf_out);
   free(buf_in);
-  free(header);
   return EXIT_SUCCESS;
 }
 
@@ -123,16 +117,14 @@ int decrypt(const char *target_file, const char *source_file,
   }
 
   int ret = 1;
-  unsigned char *buf_in =
-      malloc(sizeof(char) *
-             (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
+  unsigned char
+      buf_in[CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES];
 
   unsigned char *buf_out = calloc(sizeof(char), CHUNK_SIZE);
-  unsigned char *header =
-      calloc(sizeof(char), crypto_secretstream_xchacha20poly1305_HEADERBYTES);
+  unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
   crypto_secretstream_xchacha20poly1305_state st;
 
-  if (buf_in == NULL || buf_out == NULL || header == NULL) {
+  if (buf_out == NULL) {
     perror("Memory Allocation Fail");
     return EXIT_FAILURE;
   }
@@ -152,6 +144,7 @@ int decrypt(const char *target_file, const char *source_file,
   }
   do {
     rlen = fread(buf_in, 1, sizeof buf_in, fp_source);
+
     eof = feof(fp_source);
     if (crypto_secretstream_xchacha20poly1305_pull(
             &st, buf_out, &out_len, &tag, buf_in, rlen, NULL, 0) != 0) {
@@ -176,8 +169,6 @@ free_mem:
   fclose(fp_target);
   fclose(fp_source);
   free(buf_out);
-  free(buf_in);
-  free(header);
   return ret;
 }
 

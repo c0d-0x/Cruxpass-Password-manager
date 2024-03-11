@@ -1,4 +1,5 @@
 #include "cruxpass.h"
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -168,6 +169,7 @@ void list_all_passwords(FILE *password_db) {
   }
 
   if (access(".temp_password.db", F_OK) != 0) {
+    free(key);
     return;
   }
 
@@ -175,8 +177,10 @@ void list_all_passwords(FILE *password_db) {
   password_s = calloc(1, sizeof(password_t));
   if (password_s == NULL) {
     perror("Memory Allocation Fail");
+    free(key);
     return;
   }
+
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     free(key);
@@ -209,16 +213,23 @@ int export_pass(FILE *password_db, const char *export_file) {
   FILE *fp;
   if ((fp = fopen(export_file, "wb")) == NULL) {
     perror("Fail to Export");
+    free(key);
+    remove(".temp_password.db");
     return EXIT_FAILURE;
   }
+
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    free(key);
+    remove(".temp_password.db");
     return EXIT_FAILURE;
   }
   password_t *password = NULL;
   password = malloc(sizeof(password_t));
   if (password == NULL) {
     perror("Memory Allocation Fail");
+    free(key);
+    remove(".temp_password.db");
     return EXIT_FAILURE;
   }
 
