@@ -22,7 +22,7 @@ Available options:
 - -h: Display help information
 - -i: \<file name\>: Import passwords from a csv file
 - -l: List all saved passwords
-- -r: Generate a random password without storing it of 35 characters
+- -r: Generate a random 35 characters long password without storing it
 - -s: \<password\> \<username\> \<discryption\>: Generate a password and store it for the specified username
 
 ## Installation
