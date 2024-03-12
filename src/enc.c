@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <ncurses.h>
 #include <sodium/crypto_pwhash.h>
+#include <sodium/utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -243,28 +244,33 @@ int create_new_master_passd(char *master_passd) {
       return EXIT_FAILURE;
     }
 
-    randombytes_buf(new_hashed_password->salt, sizeof(char) * SALT_HASH_LEN);
+    randombytes_buf(new_hashed_password->salt,
+                    sizeof(unsigned char) * SALT_HASH_LEN);
 
+    if (generate_key_pass_hash(NULL, (char *)new_hashed_password->hash,
+                               (const char *const)new_passd, NULL, 1) != 0) {
+
+      fprintf(stderr, "Fail to generate Hash\n");
+      goto free_all;
+    }
     if ((master_fp = fopen("auth.db", "wb")) == NULL) {
       perror("Fail To open AUTH_DB");
       goto free_all;
     }
 
-    if (generate_key_pass_hash(NULL, (char *)new_hashed_password->hash,
-                               (const char *const)new_passd, NULL, 1) != 0 ||
-        generate_key_pass_hash(key, NULL, (const char *const)master_passd,
-                               (unsigned char *)old_hashed_password->salt,
-                               0) != 0) {
-      fprintf(stderr, "Fail to Create New Password\n");
+    if (access("password.db", F_OK) != 0) {
+      fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
+      fclose(master_fp);
+      perror("PASSWORD_DB not found");
+      ret = 0;
       goto free_all;
     }
 
-    fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
-    fclose(master_fp);
-
-    if (access("password.db", F_OK) != 0) {
-      perror("PASSWORD_DB not found");
-      return EXIT_FAILURE;
+    if (generate_key_pass_hash(key, NULL, master_passd,
+                               (unsigned char *)old_hashed_password->salt,
+                               0) != 0) {
+      fprintf(stderr, "Fail KEY\n");
+      goto free_all;
     }
 
     if (decrypt(".temp_password.db", "password.db", key) != 0) {
@@ -274,17 +280,28 @@ int create_new_master_passd(char *master_passd) {
 
     if (generate_key_pass_hash(key, NULL, new_passd, new_hashed_password->salt,
                                0) != 0) {
-      fprintf(stderr, "Fail to Create New Password\n");
+      fprintf(stderr, "Fail to Create New Password:KEY_GEN\n");
       remove(".temp_passord.db");
       goto free_all;
     }
-    remove("password.db");
-    encrypt("password.db", ".temp_password.db", key);
+
+    rename("password.db", "password.db_backup");
+    if (encrypt("password.db", ".temp_password.db", key) != 0) {
+      fprintf(stderr, "Fail to Create New Password: F_ENCRYPTION\n");
+      rename("password.db_backup", "password.db");
+      goto free_all;
+    }
+
+    fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
+    fclose(master_fp);
+
+    remove("password.db_backup");
     remove(".temp_password.db");
   } else {
     fprintf(stderr, "Passwords do not march\n");
     return ret;
   }
+
   ret = 0;
 free_all:
   free(key);
