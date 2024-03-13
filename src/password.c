@@ -98,6 +98,7 @@ static unsigned char *decryption_logic() {
 
   if (generate_key_pass_hash(key, NULL, master_passd, hashed_password->salt,
                              0) != 0) {
+    free(key);
     free(hashed_password);
     free(master_passd);
     return NULL;
@@ -110,7 +111,14 @@ static unsigned char *decryption_logic() {
     return key;
   }
 
-  decrypt(".temp_password.db", "password.db", key);
+  if (decrypt(".temp_password.db", "password.db", key) != 0) {
+    fprintf(stderr, "Fail to decrypt PASSWORD_DB");
+    free(hashed_password);
+    free(master_passd);
+    free(key);
+    return NULL;
+  }
+
   free(hashed_password);
   free(master_passd);
 
@@ -120,9 +128,10 @@ static unsigned char *decryption_logic() {
 static void encryption_logic(unsigned char *key) {
   remove("password.db");
   if (encrypt("password.db", ".temp_password.db", key) != 0) {
-    fprintf(stderr, "Fail to encrypt password_db\n");
+    fprintf(stderr, "Fail to encrypt PASSWORD_DB\n");
     return;
   }
+
   free(key);
   remove(".temp_password.db");
 }

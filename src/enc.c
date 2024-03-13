@@ -138,13 +138,13 @@ int decrypt(const char *target_file, const char *source_file,
 
   fp_source = fopen(source_file, "rb");
   fp_target = fopen(target_file, "wb");
-  fread(header, 1, sizeof header, fp_source);
+  fread(header, sizeof header, 1, fp_source);
   if (crypto_secretstream_xchacha20poly1305_init_pull(&st, header, key) != 0) {
     perror("Decrytion");
     goto free_mem;
   }
   do {
-    rlen = fread(buf_in, 1, sizeof buf_in, fp_source);
+    rlen = fread(buf_in, sizeof buf_in, 1, fp_source);
 
     eof = feof(fp_source);
     if (crypto_secretstream_xchacha20poly1305_pull(
@@ -163,7 +163,7 @@ int decrypt(const char *target_file, const char *source_file,
         /* end of file reached before the end of the stream */
       }
     }
-    fwrite(buf_out, 1, (size_t)out_len, fp_target);
+    fwrite(buf_out, (size_t)out_len, 1, fp_target);
   } while (!eof);
   ret = 0;
 free_mem:
@@ -253,12 +253,13 @@ int create_new_master_passd(char *master_passd) {
       fprintf(stderr, "Fail to generate Hash\n");
       goto free_all;
     }
-    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
-      perror("Fail To open AUTH_DB");
-      goto free_all;
-    }
 
     if (access("password.db", F_OK) != 0) {
+      if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+        perror("Fail To open AUTH_DB");
+        goto free_all;
+      }
+
       fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
       fclose(master_fp);
       perror("PASSWORD_DB not found");
@@ -292,6 +293,11 @@ int create_new_master_passd(char *master_passd) {
       goto free_all;
     }
 
+    if ((master_fp = fopen("auth.db", "wb")) == NULL) {
+      perror("Fail To open AUTH_DB");
+      goto free_all;
+    }
+
     fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
     fclose(master_fp);
 
@@ -313,27 +319,31 @@ free_all:
 }
 
 static void backup_choice(void) {
-  char opt;
+  char opt[3];
+  int opt_Fnl;
 
   do {
     printf("Do you want to rename or delete the password database (R/D)? ");
-    fflush(stdout);              /* Flush standard output before reading input*/
-    opt = tolower(fgetc(stdin)); /* Read character and convert to lowercase */
+    fflush(stdout);       /* Flush standard output before reading input*/
+    fgets(opt, 2, stdin); /* Read character and convert to lowercase */
+    opt_Fnl = tolower(opt[0]);
 
-    if (opt == 'r' || opt == 'd') {
+    if (opt_Fnl == 'r' || opt_Fnl == 'd') {
       break;
     } else {
       printf("Invalid input. Please enter 'Y' or 'N'.\n");
     }
   } while (1);
 
-  if (opt == 'r') {
+  if (opt_Fnl == 'r') {
     if (rename("password.db", "password_backup.db") != 0) {
       perror("Error renaming file");
       return;
     }
     printf("Password database renamed successfully.\n");
-  } else {
+  } else if (opt_Fnl == 'd') {
+  }
+  {
     if (remove("password.db") != 0) {
       perror("Error deleting file");
       return;
