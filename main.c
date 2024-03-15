@@ -55,10 +55,16 @@ int main(int argc, char *argv[]) {
     list_all_passwords(password_db);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
+    if (argc != 3) {
+      printf("usage: cruxpass -r <password lenght> \n");
+      return EXIT_FAILURE;
+    }
 
-    char *password = random_password();
+    int pass_len = atoi(argv[2]);
+    char *password = random_password(pass_len);
     printf("%s\n", password);
     free(password);
+
   } else if (strncmp(argv[1], "-e", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       fprintf(stderr, " usage: %s <-e> <csv file>\n", argv[0]);

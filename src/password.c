@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define PASS_MIN 8
+
 static size_t set_id() {
   FILE *password_db;
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
@@ -37,41 +39,42 @@ static size_t set_id() {
 }
 
 void help() {
-  printf("Syntax: cruxPass <option> <password> <username--optional--> "
+  printf("\tusage: cruxPass <option> <password> <username--optional--> "
          "<description>\n");
 
-  printf(" -h: shows this help\n -s: stores a password\n -r: "
-         "generates "
-         "a random password and takes no arguments\n -d: deletes a password by "
-         "id\n -n: creates a new master password\n -l: list "
-         "all saved "
-         "passwords and takes no arguments \n -e: Exports all passwords to a "
-         "csv file\n -i: imports "
-         "passwords from a csv file\n");
+  printf(
+      "\t-h: shows this help\n \t-s: stores a password\n \t-r: "
+      "generates "
+      "a random password and takes no arguments\n \t-d: deletes a password by "
+      "id\n \t-n: creates a new master password\n \t-l: list "
+      "all saved "
+      "passwords and takes no arguments \n \t-e: Exports all passwords to a "
+      "csv file\n \t-i: imports "
+      "passwords from a csv file\n");
 }
 
 char *random_password(int password_len) {
-  if (password_len < 8) {
-    printf("Password length must be at least 8 characters");
-    password_len = 8;
+  if (password_len < PASS_MIN) {
+    printf("Password length must be at least 8 characters [35 max]\n");
+    password_len = PASS_MIN;
   }
   char pass_bank[] = {
       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
       'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-      'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3',
-      '4', '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=',
-      '{', '}', '[', ']', ';', ':', '<', '@', '>', '?'};
+      'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
+      '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=', '{',
+      '}', '[', ']', ';', ':', '<', '@', '>', '?'};
   int bank_len = strlen(pass_bank);
   char *password = NULL;
-  password = malloc(sizeof(char) * PASSLENGTH);
+  password = malloc(sizeof(char) * password_len);
   if (password == NULL) {
     perror("Fail to creat password");
     return NULL;
   }
 
   srand(time(NULL));
-  for (size_t i = 0; i < PASSLENGTH; i++) {
+  for (int i = 0; i < password_len; i++) {
     password[i] += pass_bank[rand() % bank_len];
   }
   return password;
@@ -202,7 +205,8 @@ void list_all_passwords(FILE *password_db) {
   }
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
 
-    fprintf(stdout, "ID: %ld\nUsername: %s\nPassword: %s\nDescription: %s\n\n",
+    fprintf(stdout,
+            "\tID: %ld\n\tUsername: %s\n\tPassword: %s\n\tDescription: %s\n\n",
             password_s->id, password_s->username, password_s->passd,
             password_s->description);
   }
@@ -259,15 +263,14 @@ int export_pass(FILE *password_db, const char *export_file) {
   return EXIT_SUCCESS;
 }
 
+/**
+ * @field: password_t field
+ * @max_length: field MAX, a const
+ * @field_name: for error handling
+ * @line_number also for error handling
+ */
 static int process_field(char *field, const int max_length, char *token,
                          const char *field_name, size_t line_number) {
-  /**
-   * field: password_t field
-   * max_length: field MAX, a const
-   * field_name: for error handling
-   * line_number also for error handling
-   */
-
   if (token == NULL) {
     fprintf(stderr, "Missing %s at line %ld\n", field_name, line_number);
     return EXIT_FAILURE;
@@ -282,7 +285,6 @@ static int process_field(char *field, const int max_length, char *token,
 }
 
 void import_pass(FILE *password_db, const char *import_file) {
-  // Authenticate [TODO]
   if (access(import_file, F_OK) != 0) {
     perror("Fail to import passwords");
     return;
@@ -320,7 +322,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   }
 
   while (fgets(buffer, BUFFMAX, fp) != NULL) {
-    buffer[strcspn(buffer, "\n")] = '\0'; // Remove trailing newline
+    buffer[strcspn(buffer, "\n")] = '\0'; /*Remove trailing newline*/
 
     if (process_field(password->username, ACCLENGTH,
                       strtok_r(buffer, ",", &saveptr), "Username",
@@ -406,8 +408,8 @@ int delete_password(FILE *password_db, size_t id) {
   fclose(temp_bin);
 
   if (password_deleted) {
-    remove("temp_password.db");
-    rename(".temp.db", "temp_password.db");
+    remove(".temp_password.db");
+    rename(".temp.db", ".temp_password.db");
     encryption_logic(key);
   } else {
     remove(".temp.db");

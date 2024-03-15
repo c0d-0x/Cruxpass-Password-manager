@@ -18,16 +18,14 @@
 #define PASS_HASH_LEN crypto_pwhash_STRBYTES
 #define SALT_HASH_LEN crypto_pwhash_SALTBYTES
 
-typedef struct
-{
+typedef struct {
   size_t id;
   char passd[PASSLENGTH + 1];
   char username[ACCLENGTH + 1];
   char description[DESCLENGTH + 1];
 } password_t;
 
-typedef struct
-{
+typedef struct {
   char hash[PASS_HASH_LEN + 1];
   unsigned char salt[SALT_HASH_LEN];
 } hashed_pass_t;
@@ -35,6 +33,7 @@ typedef struct
 void help();
 void __initcrux();
 char *random_password(int password_len);
+
 /**
  * Deletes a password from the given file pointer.
  *
@@ -43,6 +42,7 @@ char *random_password(int password_len);
  * @return 0 on success, 1 on failure
  */
 int delete_password(FILE *, size_t);
+
 /**
  * Saves a password to the given file pointer.
  *
@@ -51,6 +51,7 @@ int delete_password(FILE *, size_t);
  * @return 0 on success, 1 on failure
  */
 int save_password(password_t *password, FILE *database_ptr);
+
 // then saves in a database.
 /**
  * Takes in a master password and returns a hashed password.

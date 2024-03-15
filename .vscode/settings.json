@@ -1,0 +1,10 @@
+{
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/home/c0d_0x/Documents/pwn.college/Crox-Password-manager/bin",
+      "binaryPath": "/home/c0d_0x/Documents/pwn.college/Crox-Password-manager/bin/cruxpass",
+      "binaryArgs": []
+    }
+  ],
+  "cmake.sourceDirectory": "/home/c0d_0x/Documents/pwn.college/Crox-Password-manager"
+}
