@@ -63,123 +63,87 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
   return EXIT_SUCCESS;
 }
 
-int encrypt(const char *target_file, const char *source_file,
-            const unsigned char key[KEY_LEN]) {
-
-  if (sodium_init() == -1) {
-    return EXIT_FAILURE;
-  }
-
-  unsigned char *buf_in = calloc(sizeof(char), CHUNK_SIZE);
-
-  unsigned char *buf_out =
-      calloc(sizeof(char),
-             (CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES));
-
+int encrypt(
+    const char *target_file, const char *source_file,
+    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
+  unsigned char buf_in[CHUNK_SIZE];
+  unsigned char
+      buf_out[CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES];
   unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
-
-  if (buf_in == NULL || buf_out == NULL) {
-    perror("Memory Allocation Fail");
-    return EXIT_FAILURE;
-  }
-
   crypto_secretstream_xchacha20poly1305_state st;
-
-  FILE *fp_target, *fp_source;
+  FILE *fp_t, *fp_s;
   unsigned long long out_len;
   size_t rlen;
   int eof;
   unsigned char tag;
 
-  fp_source = fopen(source_file, "rb");
-  fp_target = fopen(target_file, "wb");
+  fp_s = fopen(source_file, "rb");
+  fp_t = fopen(target_file, "wb");
   crypto_secretstream_xchacha20poly1305_init_push(&st, header, key);
-  fwrite(header, 1, sizeof header, fp_target);
+  fwrite(header, 1, sizeof header, fp_t);
   do {
-    rlen = fread(buf_in, 1, sizeof header, fp_source);
-    eof = feof(fp_source);
+    rlen = fread(buf_in, 1, sizeof buf_in, fp_s);
+    eof = feof(fp_s);
     tag = eof ? crypto_secretstream_xchacha20poly1305_TAG_FINAL : 0;
     crypto_secretstream_xchacha20poly1305_push(&st, buf_out, &out_len, buf_in,
                                                rlen, NULL, 0, tag);
-    fwrite(buf_out, 1, (size_t)out_len, fp_target);
+    fwrite(buf_out, 1, (size_t)out_len, fp_t);
   } while (!eof);
-  fclose(fp_target);
-  fclose(fp_source);
-  free(buf_out);
-  free(buf_in);
-  return EXIT_SUCCESS;
+  fclose(fp_t);
+  fclose(fp_s);
+  return 0;
 }
 
 int decrypt(const char *target_file, const char *source_file,
             const unsigned char key[KEY_LEN]) {
-
-  if (sodium_init() == -1) {
-    return EXIT_FAILURE;
-  }
-
-  int ret = 1;
   unsigned char
       buf_in[CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES];
-
-  unsigned char *buf_out = calloc(sizeof(char), CHUNK_SIZE);
+  unsigned char buf_out[CHUNK_SIZE];
   unsigned char header[crypto_secretstream_xchacha20poly1305_HEADERBYTES];
   crypto_secretstream_xchacha20poly1305_state st;
-
-  if (buf_out == NULL) {
-    perror("Memory Allocation Fail");
-    return EXIT_FAILURE;
-  }
-
-  FILE *fp_target, *fp_source;
+  FILE *fp_t, *fp_s;
   unsigned long long out_len;
   size_t rlen;
   int eof;
+  int ret = 1;
   unsigned char tag;
 
-  fp_source = fopen(source_file, "rb");
-  fp_target = fopen(target_file, "wb");
-  fread(header, sizeof header, 1, fp_source);
+  fp_s = fopen(source_file, "rb");
+  fp_t = fopen(target_file, "wb");
+  fread(header, 1, sizeof header, fp_s);
   if (crypto_secretstream_xchacha20poly1305_init_pull(&st, header, key) != 0) {
-    perror("Decrytion");
-    goto free_mem;
+    perror("Fail to initialize cryto_state");
+    goto ret; /* incomplete header */
   }
   do {
-    rlen = fread(buf_in, sizeof buf_in, 1, fp_source);
-
-    eof = feof(fp_source);
+    rlen = fread(buf_in, 1, sizeof buf_in, fp_s);
+    eof = feof(fp_s);
     if (crypto_secretstream_xchacha20poly1305_pull(
             &st, buf_out, &out_len, &tag, buf_in, rlen, NULL, 0) != 0) {
-      goto free_mem; /* corrupted chunk */
+      fprintf(stderr, "Fail to load encrypted buffer\n");
+      goto ret; /* corrupted chunk */
     }
     if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL) {
       if (!eof) {
-        goto free_mem; /* end of stream reached before the end of the
-                        * file
-                        */
+        goto ret; /* end of stream reached before the end of the file */
       }
     } else { /* not the final chunk yet */
       if (eof) {
-        goto free_mem;
-        /* end of file reached before the end of the stream */
+        goto ret; /* end of file reached before the end of the stream */
       }
     }
-    fwrite(buf_out, (size_t)out_len, 1, fp_target);
+    fwrite(buf_out, 1, (size_t)out_len, fp_t);
   } while (!eof);
+
   ret = 0;
-free_mem:
-  fclose(fp_target);
-  fclose(fp_source);
-  free(buf_out);
+ret:
+  fclose(fp_t);
+  fclose(fp_s);
   return ret;
 }
 
 hashed_pass_t *authenticate(char *master_passd) {
 
-  /* [TODO:]
-   * hash the passd str
-   * cmp it with the saved passd hash
-   * if correct use the password to decrypt db
-   */
   if (sodium_init() == -1) {
     return NULL;
   }
@@ -353,7 +317,6 @@ static void backup_choice(void) {
 }
 
 void __initcrux() {
-  // [TODO]: createa getpass function
   if (access("auth.db", F_OK) != 0) {
     char *new_passd = NULL;
     char *temp_passd = NULL;

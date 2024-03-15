@@ -50,7 +50,11 @@ void help() {
          "passwords from a csv file\n");
 }
 
-char *random_password(void) {
+char *random_password(int password_len) {
+  if (password_len < 8) {
+    printf("Password length must be at least 8 characters");
+    password_len = 8;
+  }
   char pass_bank[] = {
       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
       'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B',
