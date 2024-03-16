@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-FILE *password_db;
+FILE *password_db = NULL;
 char *master_passd = NULL;
 
 int main(int argc, char *argv[]) {
@@ -50,10 +50,7 @@ int main(int argc, char *argv[]) {
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
 
     __initcrux();
-
-    // Authenication[TODO]
     list_all_passwords(password_db);
-
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       printf("usage: cruxpass -r <password lenght> \n");
@@ -106,10 +103,15 @@ int main(int argc, char *argv[]) {
 
     if (create_new_master_passd(master_passd) != 0) {
       fprintf(stderr, "Fail to Creat a New Password\n");
+      free(master_passd);
       return EXIT_FAILURE;
     }
   } else {
     help();
   }
+
+  if (master_passd)
+    free(master_passd);
+
   return EXIT_SUCCESS;
 }

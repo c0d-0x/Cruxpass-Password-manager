@@ -23,9 +23,9 @@ static size_t set_id() {
     return 0;
   }
 
-  // Seek to the end of the file
+  /*Seek to the end of the file*/
   if (fseek(password_db, -(long)sizeof(password_t), SEEK_END) == 0) {
-    // Read the last password structure
+    /* Read the last password structure*/
     if (fread(temp_pass, sizeof(password_t), 1, password_db) == 1) {
       temp_id = temp_pass->id + 1;
     }
@@ -81,8 +81,7 @@ char *random_password(int password_len) {
 }
 
 /**
- *decrypts a file and return a key for encryption,
- * it also opens the decrypted password_db.
+ * decrypts a file and return a key for encryption.
  */
 static unsigned char *decryption_logic() {
 
@@ -96,10 +95,13 @@ static unsigned char *decryption_logic() {
   }
 
   if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
+    free(key);
     return NULL;
   }
 
   if ((hashed_password = authenticate(master_passd)) == NULL) {
+    free(key);
+    free(master_passd);
     return NULL;
   }
 
@@ -293,31 +295,40 @@ void import_pass(FILE *password_db, const char *import_file) {
   FILE *fp;
   if ((fp = fopen(import_file, "r")) == NULL) {
     perror("Fail to import passwords");
+    return;
   }
 
   unsigned char *key;
   if ((key = decryption_logic()) == NULL) {
+    fclose(fp);
     return;
   }
 
   if ((password_db = fopen(".temp_password.db", "ab+")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    free(key);
+    fclose(fp);
     return;
   }
+
   size_t line_number = 1;
   char *saveptr;
   char buffer[BUFFMAX + 1];
-
   password_t *password = NULL;
   password = malloc(sizeof(password_t));
   if (password == NULL) {
     perror("Memory Allocation");
+    free(key);
+    fclose(fp);
     return;
   }
 
   size_t id = set_id();
   if (id == 0) {
     fprintf(stderr, "could not set an id\n");
+    free(key);
+    free(password);
+    fclose(fp);
     return;
   }
 

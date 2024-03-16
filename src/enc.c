@@ -157,10 +157,12 @@ hashed_pass_t *authenticate(char *master_passd) {
       if (!hash_read) {
         fprintf(stderr, "No master password found\n");
         free(hashed_password);
+        fclose(master_fp);
         return NULL;
       }
     }
   } else {
+    free(hashed_password);
     perror("Fail To Authencate\n");
     return NULL;
   }
@@ -169,6 +171,8 @@ hashed_pass_t *authenticate(char *master_passd) {
                                strlen(master_passd)) != 0) {
 
     /* wrong password */
+    free(hashed_password);
+    fclose(master_fp);
     fprintf(stderr, "Wrong Password...\n");
     return NULL;
   }
