@@ -1,5 +1,6 @@
 #include "cruxpass.h"
 #include <ncurses.h>
+#include <sodium/utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -141,6 +142,7 @@ static void encryption_logic(unsigned char *key) {
     return;
   }
 
+  sodium_memzero(key, KEY_LEN);
   free(key);
   remove(".temp_password.db");
 }
@@ -150,14 +152,19 @@ int save_password(password_t *password, FILE *password_db) {
   if ((key = decryption_logic()) == NULL) {
     return EXIT_FAILURE;
   }
-  if ((password_db = fopen(".temp_password.db", "ab")) == NULL) {
+  if ((password_db = fopen(".temp_password.db", "ab+")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    sodium_memzero(key, KEY_LEN);
+    free(key);
     return EXIT_FAILURE;
   }
 
   size_t id = set_id();
   if (id == 0) {
     fprintf(stderr, "Fail to set an id\n");
+    fclose(password_db);
+    sodium_memzero(key, KEY_LEN);
+    free(key);
     return EXIT_FAILURE;
   }
 
@@ -165,11 +172,13 @@ int save_password(password_t *password, FILE *password_db) {
   if (fwrite(password, sizeof(password_t), 1, password_db) != 1) {
     perror("Fail to save password");
     fclose(password_db);
+    sodium_memzero(key, KEY_LEN);
+    free(key);
     return EXIT_FAILURE;
   }
-  encryption_logic(key);
-  free(key);
+
   fclose(password_db);
+  encryption_logic(key);
   return EXIT_SUCCESS;
 }
 
@@ -187,6 +196,7 @@ void list_all_passwords(FILE *password_db) {
   }
 
   if (access(".temp_password.db", F_OK) != 0) {
+    sodium_memzero(key, KEY_LEN);
     free(key);
     return;
   }
@@ -195,12 +205,14 @@ void list_all_passwords(FILE *password_db) {
   password_s = calloc(1, sizeof(password_t));
   if (password_s == NULL) {
     perror("Memory Allocation Fail");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     return;
   }
 
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     free(password_s);
     return;
@@ -232,6 +244,7 @@ int export_pass(FILE *password_db, const char *export_file) {
   FILE *fp;
   if ((fp = fopen(export_file, "wb")) == NULL) {
     perror("Fail to Export");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     remove(".temp_password.db");
     return EXIT_FAILURE;
@@ -239,6 +252,7 @@ int export_pass(FILE *password_db, const char *export_file) {
 
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     remove(".temp_password.db");
     return EXIT_FAILURE;
@@ -247,6 +261,7 @@ int export_pass(FILE *password_db, const char *export_file) {
   password = malloc(sizeof(password_t));
   if (password == NULL) {
     perror("Memory Allocation Fail");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     remove(".temp_password.db");
     return EXIT_FAILURE;
@@ -261,6 +276,7 @@ int export_pass(FILE *password_db, const char *export_file) {
   fclose(fp);
   fclose(password_db);
   encryption_logic(key);
+  sodium_memzero(key, KEY_LEN);
   free(password);
   return EXIT_SUCCESS;
 }
@@ -306,6 +322,7 @@ void import_pass(FILE *password_db, const char *import_file) {
 
   if ((password_db = fopen(".temp_password.db", "ab+")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     fclose(fp);
     return;
@@ -318,6 +335,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   password = malloc(sizeof(password_t));
   if (password == NULL) {
     perror("Memory Allocation");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     fclose(fp);
     return;
@@ -326,6 +344,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   size_t id = set_id();
   if (id == 0) {
     fprintf(stderr, "could not set an id\n");
+    sodium_memzero(key, KEY_LEN);
     free(key);
     free(password);
     fclose(fp);
@@ -389,11 +408,14 @@ int delete_password(FILE *password_db, size_t id) {
   if ((key = decryption_logic()) == NULL) {
     fprintf(stderr, "could not generate key\n");
     free(password);
+    fclose(temp_bin);
     return EXIT_FAILURE;
   }
+
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     free(password);
+    fclose(temp_bin);
     return EXIT_FAILURE;
   }
 
@@ -423,6 +445,9 @@ int delete_password(FILE *password_db, size_t id) {
     rename(".temp.db", ".temp_password.db");
     encryption_logic(key);
   } else {
+    sodium_memzero(key, KEY_LEN);
+    free(key);
+    free(password);
     remove(".temp.db");
     return EXIT_FAILURE;
   }
