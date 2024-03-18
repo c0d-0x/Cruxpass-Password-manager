@@ -1,6 +1,6 @@
 CC=gcc
 LIBS=-lsodium -lncurses
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -Wformat-security
 CFILES=./src/*.c
 OBJFILES=*.o
 BIN=./bin/cruxpass

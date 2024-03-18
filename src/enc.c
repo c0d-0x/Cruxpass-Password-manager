@@ -63,9 +63,8 @@ int generate_key_pass_hash(unsigned char *key, char *hashed_password,
   return EXIT_SUCCESS;
 }
 
-int encrypt(
-    const char *target_file, const char *source_file,
-    const unsigned char key[crypto_secretstream_xchacha20poly1305_KEYBYTES]) {
+int encrypt(const char *target_file, const char *source_file,
+            const unsigned char key[KEY_LEN]) {
   unsigned char buf_in[CHUNK_SIZE];
   unsigned char
       buf_out[CHUNK_SIZE + crypto_secretstream_xchacha20poly1305_ABYTES];
@@ -200,9 +199,13 @@ int create_new_master_passd(char *master_passd) {
 
   temp_passd = getpass_custom("Confirm New Password: ");
   if (strncmp(new_passd, temp_passd, PASSLENGTH) == 0) {
+    if (sodium_init() == -1) {
+      fprintf(stderr, "Error: Failed to initialize libsodium");
+      return EXIT_FAILURE;
+    }
 
     new_hashed_password = calloc(1, sizeof(hashed_pass_t));
-    key = calloc(sizeof(unsigned char), KEY_LEN);
+    key = (unsigned char *)sodium_malloc(sizeof(unsigned char) * KEY_LEN);
 
     if (new_hashed_password == NULL || key == NULL) {
       fprintf(stderr, "Memory Allocation Fail\n");
@@ -278,7 +281,8 @@ int create_new_master_passd(char *master_passd) {
 
   ret = 0;
 free_all:
-  free(key);
+  sodium_memzero(key, KEY_LEN);
+  sodium_free(key);
   free(old_hashed_password);
   free(new_hashed_password);
   free(new_passd);

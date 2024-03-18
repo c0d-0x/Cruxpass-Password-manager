@@ -7,14 +7,14 @@ FILE *password_db = NULL;
 char *master_passd = NULL;
 
 int main(int argc, char *argv[]) {
+
   if (argc < 2) {
     help();
     return 1;
   }
+
   password_t *password = NULL;
-
   if (strncmp(argv[1], "-h", sizeof(char) * 2) == 0) {
-
     help();
   } else if (strncmp(argv[1], "-s", sizeof(char) * 2) == 0) {
 
@@ -46,9 +46,7 @@ int main(int argc, char *argv[]) {
       printf("Password saved...\n");
       free(password);
     }
-
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
-
     __initcrux();
     list_all_passwords(password_db);
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
@@ -58,10 +56,12 @@ int main(int argc, char *argv[]) {
     }
 
     int pass_len = atoi(argv[2]);
-    char *password = random_password(pass_len);
-    printf("%s\n", password);
-    free(password);
-
+    char *secret = NULL;
+    if ((secret = random_password(pass_len)) == NULL) {
+      return EXIT_FAILURE;
+    }
+    printf("%s\n", secret);
+    free(secret);
   } else if (strncmp(argv[1], "-e", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       fprintf(stderr, " usage: %s <-e> <csv file>\n", argv[0]);
@@ -80,7 +80,6 @@ int main(int argc, char *argv[]) {
     __initcrux();
 
     import_pass(password_db, argv[2]);
-
   } else if (strncmp(argv[1], "-d", sizeof(char) * 2) == 0) {
 
     if (argc != 3) {
@@ -94,7 +93,6 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Password was not found...\n");
       return EXIT_FAILURE;
     }
-
   } else if (strncmp(argv[1], "-n", 3) == 0) {
 
     if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
@@ -103,6 +101,7 @@ int main(int argc, char *argv[]) {
 
     if (create_new_master_passd(master_passd) != 0) {
       fprintf(stderr, "Fail to Creat a New Password\n");
+      sodium_memzero(master_passd, PASSLENGTH);
       free(master_passd);
       return EXIT_FAILURE;
     }
@@ -110,8 +109,10 @@ int main(int argc, char *argv[]) {
     help();
   }
 
-  if (master_passd)
+  if (master_passd) {
+    sodium_memzero(master_passd, PASSLENGTH);
     free(master_passd);
+  }
 
   return EXIT_SUCCESS;
 }
