@@ -1,5 +1,4 @@
 #include "cruxpass.h"
-#include <ncurses.h>
 #include <sodium/core.h>
 #include <sodium/utils.h>
 #include <stdio.h>
@@ -57,8 +56,7 @@ void help() {
 
 char *random_password(int password_len) {
   if (password_len < PASS_MIN || password_len > PASSLENGTH) {
-    printf("Password length must be at least 8 characters [35 max]\n");
-    password_len = PASS_MIN;
+    printf("Password must be at least 8 & 35 characters long\n");
     return NULL;
   }
   char pass_bank[] = {
@@ -202,11 +200,6 @@ int save_password(password_t *password, FILE *password_db) {
   return EXIT_SUCCESS;
 }
 
-/**
- * @brief List all passwords stored in the password_db
- * @param password_db
- * @return void
- */
 void list_all_passwords(FILE *password_db) {
 
   unsigned char *key = NULL;
@@ -249,12 +242,6 @@ void list_all_passwords(FILE *password_db) {
   free(password_s);
 }
 
-/**
- * @brief exports passwords from the password_db to a csv file
- * @param password_db
- * @param export_file
- * @return 0 on success
- */
 int export_pass(FILE *password_db, const char *export_file) {
   unsigned char *key;
   if ((key = decryption_logic()) == NULL) {

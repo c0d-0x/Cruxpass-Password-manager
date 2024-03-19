@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
     __initcrux();
     list_all_passwords(password_db);
+
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       printf("usage: cruxpass -r <password lenght> \n");
