@@ -1,9 +1,16 @@
 #ifndef CRUXPASS_H
 #define CRUXPASS_H
+#include <ctype.h>
+#include <ncurses.h>
 #include <sodium.h>
+#include <sodium/core.h>
+#include <sodium/crypto_pwhash.h>
+#include <sodium/utils.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <time.h>
 #include <uchar.h>
 #include <unistd.h>

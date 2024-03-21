@@ -1,13 +1,4 @@
 #include "cruxpass.h"
-#include <ctype.h>
-#include <ncurses.h>
-#include <sodium/crypto_pwhash.h>
-#include <sodium/utils.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 char *getpass_custom(char *prompt) {
   /* [TODO] Disable Terminal echo*/
@@ -305,7 +296,7 @@ static void backup_choice(void) {
     } else {
       printf("Invalid input. Please enter 'Y' or 'N'.\n");
     }
-  } while (1);
+  } while (true);
 
   if (opt_Fnl == 'r') {
     if (rename("password.db", "password_backup.db") != 0) {
@@ -339,7 +330,7 @@ void __initcrux() {
     pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
 
     if (pass_hashWsalt == NULL) {
-      perror("Calloc");
+      perror("Memory Allocation Fail");
       return;
     }
 
