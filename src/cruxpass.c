@@ -83,7 +83,7 @@ char *random_password(int password_len) {
 /**
  * decrypts a file and return a key for encryption.
  */
-static unsigned char *decryption_logic() {
+unsigned char *decryption_logic() {
 
   char *master_passd = NULL;
   unsigned char *key;
@@ -193,47 +193,6 @@ int save_password(password_t *password, FILE *password_db) {
   fclose(password_db);
   encryption_logic(key);
   return EXIT_SUCCESS;
-}
-
-void list_all_passwords(FILE *password_db) {
-
-  unsigned char *key = NULL;
-  key = decryption_logic();
-  if (key == NULL) {
-    return;
-  }
-
-  /*The key is never used*/
-  sodium_memzero(key, KEY_LEN);
-  sodium_free(key);
-
-  if (access(".temp_password.db", F_OK) != 0) {
-    fprintf(stderr, "Error: Fail to list Passwords\n");
-    return;
-  }
-
-  password_t *password_s = NULL;
-  password_s = calloc(1, sizeof(password_t));
-  if (password_s == NULL) {
-    perror("Memory Allocation Fail");
-    return;
-  }
-
-  if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
-    perror("Fail to open PASSWORD_DB");
-    free(password_s);
-    return;
-  }
-  while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
-
-    fprintf(stdout,
-            "\tID: %ld\n\tUsername: %s\n\tPassword: %s\n\tDescription: %s\n\n",
-            password_s->id, password_s->username, password_s->passd,
-            password_s->description);
-  }
-  fclose(password_db);
-  remove(".temp_password.db");
-  free(password_s);
 }
 
 int export_pass(FILE *password_db, const char *export_file) {

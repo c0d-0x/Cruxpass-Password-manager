@@ -40,6 +40,7 @@ typedef struct {
 void help();
 void __initcrux();
 char *random_password(int password_len);
+unsigned char *decryption_logic();
 
 /**
  * Deletes a password from the given file pointer.

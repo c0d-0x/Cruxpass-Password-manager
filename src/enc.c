@@ -1,22 +1,5 @@
 #include "cruxpass.h"
 
-char *getpass_custom(char *prompt) {
-  /* [TODO] Disable Terminal echo*/
-  char *temp_passd = calloc(PASSLENGTH, sizeof(char));
-  if (temp_passd == NULL) {
-    perror("calloc");
-    return NULL;
-  }
-  printf("%s", prompt);
-  fgets(temp_passd, PASSLENGTH, stdin);
-  temp_passd[strlen(temp_passd) - 1] = '\0';
-  if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {
-    fprintf(stdin, "Invalid Password\n");
-    return NULL;
-  }
-  return temp_passd;
-}
-
 int generate_key_pass_hash(unsigned char *key, char *hashed_password,
                            const char *const new_passd, unsigned char *salt,
                            int tag) {
@@ -305,8 +288,7 @@ static void backup_choice(void) {
     }
     printf("Password database renamed successfully.\n");
   } else if (opt_Fnl == 'd') {
-  }
-  {
+
     if (remove("password.db") != 0) {
       perror("Error deleting file");
       return;
