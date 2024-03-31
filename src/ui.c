@@ -2,19 +2,49 @@
 #include <ncurses.h>
 
 char *getpass_custom(char *prompt) {
-  /* [TODO] Disable Terminal echo*/
+  initscr();
   char *temp_passd = calloc(PASSLENGTH, sizeof(char));
   if (temp_passd == NULL) {
     perror("calloc");
     return NULL;
   }
-  printf("%s", prompt);
-  fgets(temp_passd, PASSLENGTH, stdin);
+
+  WINDOW *win = NULL;
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);
+  if ((win = newwin(3, PASSLENGTH + 2, max_y / 2 + -2,
+                    max_x / 2 - PASSLENGTH / 2)) == NULL) {
+    echo();
+    endwin();
+    return NULL;
+  }
+
+  refresh();
+  box(win, 0, 0);
+  refresh();
+  mvwprintw(win, 0, 0, "%s", prompt);
+  wrefresh(win);
+  noecho();
+  refresh();
+
+  unsigned int pat, i = 0;
+  do {
+    pat = getch();
+    // for (int j = 0; j < i; j++)
+    mvwprintw(win, 1, i + 1, "*");
+    wrefresh(win);
+    temp_passd[i] = pat;
+    i++;
+  } while (i < PASSLENGTH && pat != '\n');
+
   temp_passd[strlen(temp_passd) - 1] = '\0';
   if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {
     fprintf(stdin, "Invalid Password\n");
     return NULL;
   }
+
+  echo();
+  endwin();
   return temp_passd;
 }
 
@@ -47,6 +77,9 @@ void list_all_passwords(FILE *password_db) {
     free(password_s);
     return;
   }
+  initscr();
+  WINDOW win;
+
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
 
     fprintf(stdout,

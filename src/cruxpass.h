@@ -37,8 +37,17 @@ typedef struct {
   unsigned char salt[SALT_HASH_LEN];
 } hashed_pass_t;
 
+/**
+ * Prints the help menu to the terminal.
+ */
 void help();
 void __initcrux();
+/**
+ * Generates a random password of the specified length.
+ *
+ * @param password_len the length of the password to generate
+ * @return a pointer to the generated password, or NULL on failure
+ */
 char *random_password(int password_len);
 unsigned char *decryption_logic();
 
