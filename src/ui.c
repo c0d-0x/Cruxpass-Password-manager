@@ -14,7 +14,6 @@ char *getpass_custom(char *prompt) {
   getmaxyx(stdscr, max_y, max_x);
   if ((win = newwin(3, PASSLENGTH + 2, max_y / 2 + -2,
                     max_x / 2 - PASSLENGTH / 2)) == NULL) {
-    echo();
     endwin();
     return NULL;
   }
@@ -22,15 +21,16 @@ char *getpass_custom(char *prompt) {
   refresh();
   box(win, 0, 0);
   refresh();
-  mvwprintw(win, 0, 0, "%s", prompt);
-  wrefresh(win);
   noecho();
+  mvwprintw(win, 0, 0, "%s", prompt);
+  refresh();
+  wrefresh(win);
+  move(max_y / 2 + -1, max_x / 2 - PASSLENGTH / 2 + 1);
   refresh();
 
   unsigned int pat, i = 0;
   do {
     pat = getch();
-    // for (int j = 0; j < i; j++)
     mvwprintw(win, 1, i + 1, "*");
     wrefresh(win);
     temp_passd[i] = pat;
@@ -49,7 +49,7 @@ char *getpass_custom(char *prompt) {
 }
 
 void list_all_passwords(FILE *password_db) {
-
+  // very buggy
   unsigned char *key = NULL;
   key = decryption_logic();
   if (key == NULL) {
@@ -77,16 +77,31 @@ void list_all_passwords(FILE *password_db) {
     free(password_s);
     return;
   }
+  /* printing passwords in a window*/
   initscr();
-  WINDOW win;
+  WINDOW *win_2 = NULL;
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);
+
+  if ((win_2 = newwin(500, sizeof(password_t), 2, 1)) == NULL) {
+    endwin();
+    return;
+  }
+  wborder(win_2, '|', '|', '-', '-', '+', '+', '+', '+');
+  wrefresh(win_2);
 
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
 
-    fprintf(stdout,
-            "\tID: %ld\n\tUsername: %s\n\tPassword: %s\n\tDescription: %s\n\n",
-            password_s->id, password_s->username, password_s->passd,
-            password_s->description);
+    mvwprintw(
+        win_2, 1, 1,
+        "\tID: %ld\n\tUsername: %s\n\tPassword: %s\n\tDescription: %s\n\n",
+        password_s->id, password_s->username, password_s->passd,
+        password_s->description);
   }
+  wrefresh(win_2);
+  getch();
+
+  endwin();
   fclose(password_db);
   remove(".temp_password.db");
   free(password_s);
