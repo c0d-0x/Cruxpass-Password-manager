@@ -2,15 +2,16 @@
 #include <ncurses.h>
 
 char *getpass_custom(char *prompt) {
-  initscr();
+
   char *temp_passd = calloc(PASSLENGTH, sizeof(char));
   if (temp_passd == NULL) {
     perror("calloc");
     return NULL;
   }
 
-  WINDOW *win = NULL;
+  initscr();
   int max_y, max_x;
+  WINDOW *win = NULL;
   getmaxyx(stdscr, max_y, max_x);
   if ((win = newwin(3, PASSLENGTH + 2, max_y / 2 + -2,
                     max_x / 2 - PASSLENGTH / 2)) == NULL) {
@@ -22,6 +23,7 @@ char *getpass_custom(char *prompt) {
   box(win, 0, 0);
   refresh();
   noecho();
+
   mvwprintw(win, 0, 0, "%s", prompt);
   refresh();
   wrefresh(win);
@@ -30,7 +32,7 @@ char *getpass_custom(char *prompt) {
 
   unsigned int pat, i = 0;
   do {
-    pat = getch();
+    pat = wgetch(win);
     mvwprintw(win, 1, i + 1, "*");
     wrefresh(win);
     temp_passd[i] = pat;
@@ -77,31 +79,52 @@ void list_all_passwords(FILE *password_db) {
     free(password_s);
     return;
   }
+
   /* printing passwords in a window*/
+  int rows, cols, page_height, page_width;
+  WINDOW *page;
+  int current_line = 1;
+
   initscr();
-  WINDOW *win_2 = NULL;
-  int max_y, max_x;
-  getmaxyx(stdscr, max_y, max_x);
+  noecho();
+  clear();
+  curs_set(0);
+  getmaxyx(stdscr, rows, cols);
 
-  if ((win_2 = newwin(500, sizeof(password_t), 2, 1)) == NULL) {
+  page_height = rows - 2; /*Adjust for borders*/
+  page_width = cols - 2;
+
+  if ((page = newwin(page_height, page_width, 1, 1)) ==
+      NULL) { /* Create window with 1px border*/
+    echo();
     endwin();
-    return;
+    fclose(password_db);
+    remove(".temp_password.db");
+    free(password_s);
   }
-  wborder(win_2, '|', '|', '-', '-', '+', '+', '+', '+');
-  wrefresh(win_2);
 
+  printw("\tID\tUsername\t\t\t\tPassword\t\t\t\tDescription\n");
+  refresh();
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
+    box(page, 0, 0);
+    if (current_line >= page_height - 1) {
+      wrefresh(page);
+      mvprintw(page_height + 1, 1, "Press any key for next page");
+      getch();
+      wclear(page);
+      current_line = 1;
+    }
 
-    mvwprintw(
-        win_2, 1, 1,
-        "\tID: %ld\n\tUsername: %s\n\tPassword: %s\n\tDescription: %s\n\n",
-        password_s->id, password_s->username, password_s->passd,
-        password_s->description);
+    mvwprintw(page, current_line, 1, "\t%ld\t%s\t\t\t%s\t\t\t%s\n",
+              password_s->id, password_s->username, password_s->passd,
+              password_s->description);
+    current_line++;
   }
-  wrefresh(win_2);
-  getch();
-
+  wrefresh(page);
+  getch(); // Wait for a key press before exiting
+  echo();
   endwin();
+
   fclose(password_db);
   remove(".temp_password.db");
   free(password_s);
