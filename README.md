@@ -69,7 +69,7 @@ For any questions or feedback, please contact <c0d_0x007@proton.me>.
 This project is currently under development.
 Future plans include:
 
-- Support for multiple password databases [-]
-- Integration with other password management tools [-]
-- integration with sqllight for password storage
-- copy password to clipboad and autofills
+- Support for multiple password databases
+- Integration with other password management tools
+- Integration with sqllight for password storage
+- Copy password to clipboad on generation
