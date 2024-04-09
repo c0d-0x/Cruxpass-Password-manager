@@ -34,6 +34,7 @@ git clone https://github.com/c0d-0x/Cruxpass-Password-manager
 
 Compile the code:
 cd cruxPass
+mkdir bin
 make
 
 Run the program:
@@ -47,6 +48,9 @@ Use code with caution. Learn more
 Password storage: cruxPass uses a secure password storage mechanism (to be specified in detail).
 Authentication: cruxPass requires authentication before accessing or modifying stored passwords.
 Best practices: Always use strong, unique passwords and never share them with others.
+
+NOTE: Use it at your own risks, as this project was implimented for a better unstanding of file IO,
+basic encryption and decryption, data serialisation and deserialization.
 
 ## Contributing
 
@@ -65,6 +69,7 @@ For any questions or feedback, please contact <c0d_0x007@proton.me>.
 This project is currently under development.
 Future plans include:
 
-- Encryption of stored passwords
-- Support for multiple password databases
-- Integration with other password management tools
+- Support for multiple password databases [-]
+- Integration with other password management tools [-]
+- integration with sqllight for password storage
+- copy password to clipboad and autofills
