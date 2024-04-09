@@ -32,12 +32,12 @@ Clone this repository:
 
 git clone https://github.com/c0d-0x/Cruxpass-Password-manager
 
-Compile the code:
+#Compile the code:
 cd cruxPass
 mkdir bin
 make
 
-Run the program:
+#Run the program:
 Bash
 ./bin/cruxPass <option> <argument>
 ```
