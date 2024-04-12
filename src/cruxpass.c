@@ -1,4 +1,7 @@
 #include "cruxpass.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PASS_MIN 8
 
@@ -78,6 +81,20 @@ char *random_password(int password_len) {
     password[i] += pass_bank[(int)randombytes_uniform(bank_len)];
   }
   return password;
+}
+
+void *setpath(char *home_file_path) {
+  char *path = NULL;
+  const char workdir[] = "/.config/cruxpass/";
+  if ((path = malloc(sizeof(char) * 256)) == NULL) {
+    return NULL;
+  }
+  const char *home = getenv("HOME");
+  sprintf(path, "%s", home);
+  strncat(path, workdir, 256 - sizeof(home));
+  strncat(path, home_file_path, (246 - sizeof(home) - sizeof(workdir)));
+
+  return path;
 }
 
 /**

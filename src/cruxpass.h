@@ -50,7 +50,7 @@ void __initcrux();
  */
 char *random_password(int password_len);
 unsigned char *decryption_logic();
-
+void *setpath(char *);
 /**
  * Deletes a password from the given file pointer.
  *

@@ -1,4 +1,5 @@
 #include "cruxpass.h"
+#include <ncurses.h>
 
 int generate_key_pass_hash(unsigned char *key, char *hashed_password,
                            const char *const new_passd, unsigned char *salt,
@@ -265,29 +266,22 @@ free_all:
 }
 
 static void backup_choice(void) {
-  char opt[3];
-  int opt_Fnl;
-
+  char opt;
+  initscr();
   do {
-    printf("Do you want to rename or delete the password database (R/D)? ");
-    fflush(stdout);       /* Flush standard output before reading input*/
-    fgets(opt, 2, stdin); /* Read character and convert to lowercase */
-    opt_Fnl = tolower(opt[0]);
+    printw("Do you want to rename or delete the password database (R/D)? ");
+    refresh();
+    opt = getch(); /* Read character and convert to lowercase */
+    opt = tolower(opt);
+  } while (opt == 'r' || opt == 'd');
 
-    if (opt_Fnl == 'r' || opt_Fnl == 'd') {
-      break;
-    } else {
-      printf("Invalid input. Please enter 'Y' or 'N'.\n");
-    }
-  } while (true);
-
-  if (opt_Fnl == 'r') {
+  if (opt == 'r') {
     if (rename("password.db", "password_backup.db") != 0) {
       perror("Error renaming file");
       return;
     }
     printf("Password database renamed successfully.\n");
-  } else if (opt_Fnl == 'd') {
+  } else if (opt == 'd') {
 
     if (remove("password.db") != 0) {
       perror("Error deleting file");

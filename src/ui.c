@@ -1,5 +1,6 @@
 #include "cruxpass.h"
 #include <ncurses.h>
+#include <stdio.h>
 
 char *getpass_custom(char *prompt) {
 
@@ -68,14 +69,14 @@ void list_all_passwords(FILE *password_db) {
   }
 
   password_t *password_s = NULL;
-  password_s = calloc(1, sizeof(password_t));
-  if (password_s == NULL) {
+  if ((password_s = calloc(1, sizeof(password_t))) == NULL) {
     perror("Memory Allocation Fail");
     return;
   }
 
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
+    remove(".temp_password.db");
     free(password_s);
     return;
   }
@@ -115,9 +116,8 @@ void list_all_passwords(FILE *password_db) {
       current_line = 1;
     }
 
-    mvwprintw(page, current_line, 1, "\t%ld\t%s\t\t\t%s\t\t\t%s\n",
-              password_s->id, password_s->username, password_s->passd,
-              password_s->description);
+    mvwprintw(page, current_line, 1, "\t%ld\t%s\t\t%s\t\t%s\n", password_s->id,
+              password_s->username, password_s->passd, password_s->description);
     current_line++;
   }
   wrefresh(page);

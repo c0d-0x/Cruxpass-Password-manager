@@ -14,6 +14,10 @@ $(BIN):$(OBJFILES)
 
 $(OBJFILES):$(CFILES) 
 	$(CC) $(CFLAGS) -c $^
+install:
+	mkdir $HOME/.local/share/cruxpass
+	cp $BIN /bin/
+	
 
 clean:
 	rm *.o $(BIN)
