@@ -15,7 +15,7 @@ BIN = ./bin/cruxpass
 PREFIX ?= /usr/local
 
 # Installation directory
-DESTDIR = /usr/share/cruxpass
+DESTDIR = /usr/local/share/cruxpass
 
 # Main target
 all: $(BIN)
