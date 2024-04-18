@@ -85,11 +85,13 @@ char *random_password(int password_len) {
 
 void *setpath(char *home_file_path) {
   char *path = NULL;
+  // const char workdir[] = "/.config/cruxpass/";
   if ((path = malloc(sizeof(char) * 256)) == NULL) {
     return NULL;
   }
   const char *home = getenv("HOME");
   sprintf(path, "%s", home);
+  // strncat(path, workdir, 256 - sizeof(home));
   strncat(path, home_file_path, (246 - sizeof(home)));
 
   return path;
@@ -99,6 +101,11 @@ void *setpath(char *home_file_path) {
  * decrypts a file and return a key for encryption.
  */
 unsigned char *decryption_logic() {
+
+  if (chdir("/Documents/pwn.college/workspace/Crox-Password-manager/") != 0) {
+    perror("Change dir");
+    return NULL;
+  }
 
   char *master_passd = NULL;
   unsigned char *key;

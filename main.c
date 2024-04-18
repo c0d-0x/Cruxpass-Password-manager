@@ -1,4 +1,6 @@
 #include "src/cruxpass.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 FILE *password_db = NULL;
 char *master_passd = NULL;
@@ -7,7 +9,15 @@ int main(int argc, char *argv[]) {
 
   if (argc < 2) {
     help();
-    return 1;
+    return EXIT_FAILURE;
+  }
+
+  char *path =
+      setpath("/Documents/pwn.college/workspace/Crox-Password-manager/");
+  printf("%s", path);
+  if (chdir(path) != 0) {
+    perror("Change dir");
+    return EXIT_FAILURE;
   }
 
   password_t *password = NULL;
