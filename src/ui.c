@@ -104,20 +104,20 @@ void list_all_passwords(FILE *password_db) {
     free(password_s);
   }
 
-  printw("\tID\tUsername\t\t\t\tPassword\t\t\t\tDescription\n");
+  printw("\tID\t\tUsername\t\tPassword\t\t\tDescription\n");
   refresh();
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
     box(page, 0, 0);
     if (current_line >= page_height - 1) {
       wrefresh(page);
-      mvprintw(page_height + 1, 1, "Press any key for next page");
+      mvprintw(page_height + 1, 1, "Press right arrow key for next page");
       getch();
       wclear(page);
       current_line = 1;
     }
-
-    mvwprintw(page, current_line, 1, "\t%ld\t%s\t\t%s\t\t%s\n", password_s->id,
-              password_s->username, password_s->passd, password_s->description);
+    mvwprintw(page, current_line, 1, "\t%ld\t%15s\t\t%15s\t\t%23s\n",
+              password_s->id, password_s->username, password_s->passd,
+              password_s->description);
     current_line++;
   }
   wrefresh(page);

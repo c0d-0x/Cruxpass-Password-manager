@@ -12,10 +12,10 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  char *path =
-      setpath("/Documents/pwn.college/workspace/Crox-Password-manager/");
-  printf("%s", path);
-  if (chdir(path) != 0) {
+  // char *path = setpath(PATH);
+  // printf("%s", path);
+  if (chdir(PATH) != 0) {
+    printf(PATH);
     perror("Change dir");
     return EXIT_FAILURE;
   }

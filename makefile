@@ -1,26 +1,48 @@
-CC=gcc
-LIBS=-lsodium -lncurses
-CFLAGS=-Wall -Wextra -Wformat-security
-CFILES=./src/*.c
-OBJFILES=*.o
-BIN=./bin/cruxpass
-TEST=./test/cruxpass
-MAIN=main.c
+# Compiler and flags
+CC = gcc
+CFLAGS = -Wall -Wextra -Wformat-security
+LIBS = -lsodium -lncurses
+MAIN = main.c
 
-all:$(BIN)
+# Source and object files
+CFILES = ./src/*.c
+OBJFILES = *.o  
 
-$(BIN):$(OBJFILES)
-	$(CC) $(CFLAGS) $(LIBS) $(MAIN) -g -o $@ $^
+# Target binaries
+BIN = ./bin/cruxpass
 
-$(OBJFILES):$(CFILES) 
-	$(CC) $(CFLAGS) -c $^
-install:
-	mkdir $HOME/.local/share/cruxpass
-	cp $BIN /bin/
-	
+# Installation prefix (default /usr/local)
+PREFIX ?= /usr/local
 
+# Installation directory
+DESTDIR = /usr/share/cruxpass
+
+# Main target
+all: $(BIN)
+
+# Build executable
+$(BIN): $(OBJFILES)
+	$(CC) $(CFLAGS) $(LIBS) $(MAIN) -o $@ $^
+
+# Compile source files
+$(OBJFILES): $(CFILES)
+	$(CC) $(CFLAGS) -c $^ 
+
+# Install target
+install: $(BIN)
+	install -d $(PREFIX)/bin  # Combined directory creation
+	install -d $(DESTDIR)
+	install -m 0755 $(BIN) $(PREFIX)/bin
+
+# Phony target (no actual command)
+.PHONY: clean uninstall
+
+# Clean target
 clean:
-	rm *.o $(BIN)
+	rm -f *.o $(BIN)
 
-
+# Uninstall target
+uninstall:
+	rm -rf $(DESTDIR)
+	sudo rm $(PREFIX)/cruxpass
 

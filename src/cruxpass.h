@@ -16,7 +16,6 @@
 #include <unistd.h>
 
 #define CHUNK_SIZE 4096
-#define IDLENGTH 13
 #define PASSLENGTH 35
 #define ACCLENGTH 30
 #define DESCLENGTH 56
@@ -24,6 +23,7 @@
 #define KEY_LEN crypto_box_SEEDBYTES
 #define PASS_HASH_LEN crypto_pwhash_STRBYTES
 #define SALT_HASH_LEN crypto_pwhash_SALTBYTES
+#define PATH "/usr/local/share/cruxpass"
 
 typedef struct {
   size_t id;

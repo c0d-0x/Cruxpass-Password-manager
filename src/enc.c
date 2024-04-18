@@ -272,7 +272,6 @@ static void backup_choice(void) {
     printw("Do you want to rename or delete the password database (R/D)? ");
     refresh();
     opt = getch(); /* Read character and convert to lowercase */
-    opt = tolower(opt);
   } while (opt == 'r' || opt == 'd');
 
   if (opt == 'r') {
@@ -314,13 +313,14 @@ void __initcrux() {
 
     new_passd = getpass_custom("New Password: ");
     if (new_passd == NULL) {
+      free(pass_hashWsalt);
       return;
     }
 
     temp_passd = getpass_custom("Confirm Password: ");
 
     if (strcmp(new_passd, temp_passd) != 0) {
-      fprintf(stderr, "Password Do Not Match\n");
+      fprintf(stderr, "Passwords Do Not Match\n");
       goto free_mm;
     }
 
