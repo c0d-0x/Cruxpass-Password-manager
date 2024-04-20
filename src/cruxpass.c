@@ -236,7 +236,8 @@ int export_pass(FILE *password_db, const char *export_file) {
     perror("Fail to Import...");
     return EXIT_FAILURE;
   }
-  strcat(export_file_path, export_file);
+
+  strncat(export_file_path, export_file, 256 - strlen(export_file_path));
   unsigned char *key;
   if ((key = decryption_logic()) == NULL) {
     return EXIT_FAILURE;
