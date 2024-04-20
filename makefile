@@ -15,7 +15,7 @@ BIN = ./bin/cruxpass
 PREFIX ?= /usr/local
 
 # Installation directory
-DESTDIR = /usr/local/share/cruxpass
+DESTDIR = $(HOME)/.local/share/cruxpass
 
 # Main target
 all: $(BIN)
@@ -30,9 +30,9 @@ $(OBJFILES): $(CFILES)
 
 # Install target
 install: $(BIN)
-	install -d $(PREFIX)/bin  # Combined directory creation
+	sudo install -d $(PREFIX)/bin 
 	install -d $(DESTDIR)
-	install -m 0755 $(BIN) $(PREFIX)/bin
+	sudo install -m 0755 $(BIN) $(PREFIX)/bin
 
 # Phony target (no actual command)
 .PHONY: clean uninstall

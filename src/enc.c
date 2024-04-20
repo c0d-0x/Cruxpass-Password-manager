@@ -269,28 +269,36 @@ static void backup_choice(void) {
   char opt;
   initscr();
   do {
-    printw("Do you want to rename or delete the password database (R/D)? ");
+    printw("Do you want to backup your old password database [Y/N]?");
     refresh();
     opt = getch(); /* Read character and convert to lowercase */
-  } while (opt == 'r' || opt == 'd');
+  } while ('y' == opt);
 
-  if (opt == 'r') {
+  if (opt == 'y') {
     if (rename("password.db", "password_backup.db") != 0) {
       perror("Error renaming file");
       return;
     }
-    printf("Password database renamed successfully.\n");
-  } else if (opt == 'd') {
+    printf(" Old Password Database save\n");
+  } else {
 
     if (remove("password.db") != 0) {
       perror("Error deleting file");
       return;
     }
-    printf("Password database deleted successfully.\n");
+    printf("Old Password Database Deleted\n");
   }
 }
 
 void __initcrux() {
+
+  char *path = setpath(PATH);
+  printf("%s", path);
+  if (chdir(path) != 0) {
+    perror("Change dir");
+    return;
+  }
+
   if (access("auth.db", F_OK) != 0) {
     char *new_passd = NULL;
     char *temp_passd = NULL;
@@ -300,17 +308,15 @@ void __initcrux() {
       fprintf(stdout, "There is a PASSWORD_DB found...\n");
       backup_choice();
     }
+
     FILE *master_fp;
-
     pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
-
     if (pass_hashWsalt == NULL) {
       perror("Memory Allocation Fail");
       return;
     }
 
     fprintf(stdout, "Create a new Master Password\n");
-
     new_passd = getpass_custom("New Password: ");
     if (new_passd == NULL) {
       free(pass_hashWsalt);
@@ -318,14 +324,12 @@ void __initcrux() {
     }
 
     temp_passd = getpass_custom("Confirm Password: ");
-
     if (strcmp(new_passd, temp_passd) != 0) {
       fprintf(stderr, "Passwords Do Not Match\n");
       goto free_mm;
     }
 
     randombytes_buf(pass_hashWsalt->salt, crypto_pwhash_SALTBYTES);
-
     if ((master_fp = fopen("auth.db", "wb")) == NULL) {
       perror("Fail To open AUTH_DB");
       goto free_mm;

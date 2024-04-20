@@ -23,7 +23,7 @@
 #define KEY_LEN crypto_box_SEEDBYTES
 #define PASS_HASH_LEN crypto_pwhash_STRBYTES
 #define SALT_HASH_LEN crypto_pwhash_SALTBYTES
-#define PATH "/usr/local/share/cruxpass"
+#define PATH "/.local/share/cruxpass"
 
 typedef struct {
   size_t id;
