@@ -111,23 +111,26 @@ unsigned char *decryption_logic() {
   if (chdir(path) != 0) {
     printf("path: %s", path);
     perror("Change dir");
-    return EXIT_FAILURE;
+    return NULL;
   }
 
   if (sodium_init() == -1) {
     fprintf(stderr, "Error: Failed to initialize libsodium");
+    free(path);
     return NULL;
   }
 
   if ((key = (unsigned char *)sodium_malloc(sizeof(unsigned char) * KEY_LEN)) ==
       NULL) {
     perror("Memory Allocation Fail");
+    free(path);
     return NULL;
   }
 
   if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
     sodium_memzero(key, KEY_LEN);
     sodium_free(key);
+    free(path);
     return NULL;
   }
 
@@ -136,6 +139,7 @@ unsigned char *decryption_logic() {
     sodium_memzero(master_passd, PASSLENGTH);
     sodium_free(key);
     free(master_passd);
+    free(path);
     return NULL;
   }
 
@@ -146,14 +150,15 @@ unsigned char *decryption_logic() {
     sodium_free(key);
     free(hashed_password);
     free(master_passd);
+    free(path);
     return NULL;
   }
-  // char *path = setpath(
-  //     "/Documents/pwn.college/workspace/Crox-Password-manager/password.db");
+
   if (access("password.db", F_OK) != 0) {
     perror("PASSWORD_DB not found-setpath");
     free(hashed_password);
     sodium_memzero(master_passd, PASSLENGTH);
+    free(path);
     free(master_passd);
     return key;
   }
@@ -165,11 +170,14 @@ unsigned char *decryption_logic() {
     free(hashed_password);
     free(master_passd);
     sodium_free(key);
+    free(path);
     return NULL;
   }
+
   sodium_memzero(master_passd, PASSLENGTH);
   free(hashed_password);
   free(master_passd);
+  free(path);
 
   return key;
 }

@@ -44,5 +44,5 @@ clean:
 # Uninstall target
 uninstall:
 	rm -rf $(DESTDIR)
-	rm $(PREFIX)/bin/cruxpass
+	sudo rm $(PREFIX)/bin/cruxpass
 
