@@ -99,7 +99,7 @@ int export_pass(FILE *database_ptr, const char *export_file);
  * @param export_file the file path to export the password to
  * @return 0 on success, 1 on failure
  */
-void import_pass(FILE *database_ptr, const char *import_file);
+void import_pass(FILE *database_ptr, char *import_file);
 
 /**
  * Creates a new master password for the database.

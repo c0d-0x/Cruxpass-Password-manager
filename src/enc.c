@@ -1,5 +1,6 @@
 #include "cruxpass.h"
 #include <ncurses.h>
+#include <stdlib.h>
 
 int generate_key_pass_hash(unsigned char *key, char *hashed_password,
                            const char *const new_passd, unsigned char *salt,
@@ -291,9 +292,9 @@ static void backup_choice(void) {
 }
 
 void __initcrux() {
-
+  int master_opened = 0;
   char *path = setpath(PATH);
-  printf("%s", path);
+  printf(" >>>%s\n", path);
   if (chdir(path) != 0) {
     perror("Change dir");
     return;
@@ -313,12 +314,14 @@ void __initcrux() {
     pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
     if (pass_hashWsalt == NULL) {
       perror("Memory Allocation Fail");
+      free(path);
       return;
     }
 
     fprintf(stdout, "Create a new Master Password\n");
     new_passd = getpass_custom("New Password: ");
     if (new_passd == NULL) {
+      free(path);
       free(pass_hashWsalt);
       return;
     }
@@ -344,7 +347,8 @@ void __initcrux() {
     fwrite(pass_hashWsalt, sizeof(hashed_pass_t), 1, master_fp);
 
   free_mm:
-    fclose(master_fp);
+    if (master_opened)
+      fclose(master_fp);
     free(new_passd);
     free(temp_passd);
     free(pass_hashWsalt);

@@ -93,6 +93,7 @@ void *setpath(char *home_file_path) {
   const char *home = getenv("HOME");
   sprintf(path, "%s", home);
   strncat(path, home_file_path, (246 - sizeof(home)));
+  path[strlen(path)] = '\0';
 
   return path;
 }
@@ -107,9 +108,7 @@ unsigned char *decryption_logic() {
   hashed_pass_t *hashed_password;
 
   char *path = setpath(PATH);
-  printf("%s", path);
   if (chdir(path) != 0) {
-    printf("path: %s", path);
     perror("Change dir");
     return NULL;
   }
@@ -230,33 +229,25 @@ int save_password(password_t *password, FILE *password_db) {
 }
 
 int export_pass(FILE *password_db, const char *export_file) {
-  char export_file_path[256];
-
-  if (getcwd(export_file_path, sizeof(export_file_path)) == NULL) {
-    perror("Fail to Import...");
-    return EXIT_FAILURE;
-  }
-
-  strncat(export_file_path, export_file, 256 - strlen(export_file_path));
   unsigned char *key;
   if ((key = decryption_logic()) == NULL) {
     return EXIT_FAILURE;
   }
 
   FILE *fp;
-  if ((fp = fopen(export_file_path, "wb")) == NULL) {
+  if ((fp = fopen(export_file, "wb")) == NULL) {
     perror("Fail to Export");
     sodium_memzero(key, KEY_LEN);
-    sodium_free(key);
     remove(".temp_password.db");
+    sodium_free(key);
     return EXIT_FAILURE;
   }
 
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     sodium_memzero(key, KEY_LEN);
-    sodium_free(key);
     remove(".temp_password.db");
+    sodium_free(key);
     return EXIT_FAILURE;
   }
   password_t *password = NULL;
@@ -264,8 +255,8 @@ int export_pass(FILE *password_db, const char *export_file) {
   if (password == NULL) {
     perror("Memory Allocation Fail");
     sodium_memzero(key, KEY_LEN);
-    sodium_free(key);
     remove(".temp_password.db");
+    sodium_free(key);
     return EXIT_FAILURE;
   }
 
@@ -303,37 +294,31 @@ static int process_field(char *field, const int max_length, char *token,
   return EXIT_SUCCESS;
 }
 
-void import_pass(FILE *password_db, const char *import_file) {
+void import_pass(FILE *password_db, char *import_file) {
 
   if (access(import_file, F_OK) != 0) {
     perror("Fail to import passwords");
     return;
   }
 
-  char *import_real_path;
-  if ((import_real_path = realpath(import_file, NULL)) == NULL) {
-    perror("Import File");
-    return;
-  }
-
   FILE *fp;
-  if ((fp = fopen(import_real_path, "r")) == NULL) {
+  if ((fp = fopen(import_file, "r")) == NULL) {
     perror("Fail to import passwords");
-    free(import_real_path);
+    free(import_file);
     return;
   }
 
   unsigned char *key;
   if ((key = decryption_logic()) == NULL) {
     fclose(fp);
-    free(import_real_path);
+    free(import_file);
     return;
   }
 
   if ((password_db = fopen(".temp_password.db", "ab+")) == NULL) {
     perror("Fail to open PASSWORD_DB");
     sodium_memzero(key, KEY_LEN);
-    free(import_real_path);
+    free(import_file);
     sodium_free(key);
     fclose(fp);
     return;
@@ -347,7 +332,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   if (password == NULL) {
     perror("Memory Allocation");
     sodium_memzero(key, KEY_LEN);
-    free(import_real_path);
+    free(import_file);
     sodium_free(key);
     fclose(fp);
     return;
@@ -357,7 +342,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   if (id == 0) {
     fprintf(stderr, "could not set an id\n");
     sodium_memzero(key, KEY_LEN);
-    free(import_real_path);
+    free(import_file);
     sodium_free(key);
     free(password);
     fclose(fp);
@@ -395,7 +380,7 @@ void import_pass(FILE *password_db, const char *import_file) {
   fclose(fp);
   fclose(password_db);
   encryption_logic(key);
-  free(import_real_path);
+  free(import_file);
   free(password);
   return;
 }

@@ -1,6 +1,7 @@
 #include "src/cruxpass.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 FILE *password_db = NULL;
 char *master_passd = NULL;
@@ -67,19 +68,42 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, " usage: %s <-e> <csv file>\n", argv[0]);
       return EXIT_FAILURE;
     }
-    __initcrux();
+    if (strlen(argv[2]) > 15) {
+      fprintf(stderr, "Export file name too long\n");
+      return EXIT_FAILURE;
+    }
 
-    if (export_pass(password_db, argv[2]) == 0) {
+    char export_file_path[256];
+    if (getcwd(export_file_path, sizeof(export_file_path)) == NULL) {
+      perror("Fail to Export");
+      return EXIT_FAILURE;
+    }
+
+    export_file_path[strlen(export_file_path)] = '/';
+    strncat(export_file_path, argv[2], sizeof(char) * 15);
+    __initcrux();
+    if (export_pass(password_db, export_file_path) == 0) {
       printf("Passwords exported to %s", argv[2]);
+      return EXIT_FAILURE;
     };
+
   } else if (strncmp(argv[1], "-i", sizeof(char) * 2) == 0) {
     if (argc != 3) {
       fprintf(stderr, " usage: %s <-i> <csv file>\n", argv[0]);
       return EXIT_FAILURE;
     }
-    __initcrux();
+    if (strlen(argv[2]) > 10) {
+      fprintf(stderr, "Import file name too long\n");
+      return EXIT_FAILURE;
+    }
 
-    import_pass(password_db, argv[2]);
+    char *real_path;
+    if ((real_path = realpath(argv[2], NULL)) == NULL) {
+      perror("Import File");
+      return EXIT_FAILURE;
+    }
+    __initcrux();
+    import_pass(password_db, real_path);
   } else if (strncmp(argv[1], "-d", sizeof(char) * 2) == 0) {
 
     if (argc != 3) {
