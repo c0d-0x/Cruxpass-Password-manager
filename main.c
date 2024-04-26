@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     __initcrux();
-    // Authenication[TODO]
     if ((strlen(argv[2]) > PASSLENGTH) ||
         (strlen(argv[3]) > ACCLENGTH || (strlen(argv[4]) > DESCLENGTH))) {
       fprintf(stderr,

@@ -93,9 +93,9 @@ void list_all_passwords(FILE *password_db) {
   getmaxyx(stdscr, rows, cols);
 
   page_height = rows - 2; /*Adjust for borders*/
-  page_width = cols - 2;
+  page_width = cols * 0.8;
 
-  if ((page = newwin(page_height, page_width, 1, 1)) ==
+  if ((page = newwin(page_height, page_width, 1, cols * 0.1)) ==
       NULL) { /* Create window with 1px border*/
     echo();
     endwin();
@@ -104,7 +104,7 @@ void list_all_passwords(FILE *password_db) {
     free(password_s);
   }
 
-  printw("\tID\t\tUsername\t\tPassword\t\t\tDescription\n");
+  mvprintw(0, cols * 0.1, "\tID\t\tUsername\t\tPassword\t\t\tDescription\n");
   refresh();
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
     box(page, 0, 0);
