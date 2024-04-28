@@ -16,7 +16,7 @@ cruxPass <option> <argument>
 Use code with caution. Learn more
 Available options:
 
-- -n:  creates a new master password
+- -n: creates a new master password
 - -d: \<password id\>: Deletes a password by id
 - -e: \<file name\>: Export all saved passwords to a csv format
 - -h: Display help information
@@ -28,29 +28,33 @@ Available options:
 ## Installation
 
 Clone this repository:
-``` Bash
+
+```Bash
 
 git clone https://github.com/c0d-0x/Cruxpass-Password-manager
 
 #Compile the code:
 cd cruxPass
-mkdir bin
-make
+make intstall
 
 #Run the program:
 Bash
-./bin/cruxPass <option> <argument>
+cruxPass <option> <argument>
+
+uninstall with: make uninstall
 ```
+
 Use code with caution. Learn more
 
 ## Security Considerations
 
-Password storage: cruxPass uses a secure password storage mechanism (to be specified in detail).
+Password storage: Passwords are stored in an encrypted binary file in "~/.local/share/cruxpass/"
 Authentication: cruxPass requires authentication before accessing or modifying stored passwords.
 Best practices: Always use strong, unique passwords and never share them with others.
 
 NOTE: Use it at your own risks, as this project was implimented for a better unstanding of file IO,
-basic encryption and decryption, data serialisation and deserialization.
+basic encryption and decryption, data serialisation and deserialization. You might need to clear your bash
+history after saving a password with the -s option.
 
 ## Contributing
 
@@ -70,6 +74,7 @@ This project is currently under development.
 Future plans include:
 
 - Support for multiple password databases
+- Better encryption implimentation
 - Integration with other password management tools
 - Integration with sqllight for password storage
 - Copy password to clipboad on generation

@@ -1,3 +1,9 @@
+/**
+ * POJECT: cruxpass - A simple password manager
+ * AUTHOR: c0d_0x
+ * MIT LICENSE
+ */
+
 #ifndef CRUXPASS_H
 #define CRUXPASS_H
 #include <ctype.h>

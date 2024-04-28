@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, " usage: %s <-i> <csv file>\n", argv[0]);
       return EXIT_FAILURE;
     }
-    if (strlen(argv[2]) > 10) {
+    if (strlen(argv[2]) > 20) {
       fprintf(stderr, "Import file name too long\n");
       return EXIT_FAILURE;
     }

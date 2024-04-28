@@ -1,9 +1,5 @@
 #include "cruxpass.h"
-#include <linux/limits.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #define PASS_MIN 8
 
@@ -91,6 +87,9 @@ void *setpath(char *home_file_path) {
     return NULL;
   }
   const char *home = getenv("HOME");
+  if (home == NULL) {
+    return NULL;
+  }
   sprintf(path, "%s", home);
   strncat(path, home_file_path, (246 - sizeof(home)));
   path[strlen(path)] = '\0';
@@ -109,7 +108,7 @@ unsigned char *decryption_logic() {
 
   char *path = setpath(PATH);
   if (chdir(path) != 0) {
-    perror("Change dir");
+    fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
     return NULL;
   }
 
@@ -154,7 +153,6 @@ unsigned char *decryption_logic() {
   }
 
   if (access("password.db", F_OK) != 0) {
-    perror("PASSWORD_DB not found-setpath");
     free(hashed_password);
     sodium_memzero(master_passd, PASSLENGTH);
     free(path);

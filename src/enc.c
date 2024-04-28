@@ -122,6 +122,13 @@ hashed_pass_t *authenticate(char *master_passd) {
   if (sodium_init() == -1) {
     return NULL;
   }
+
+  char *path = setpath(PATH);
+  if (chdir(path) != 0) {
+    fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
+    return NULL;
+  }
+
   hashed_pass_t *hashed_password = malloc(sizeof(hashed_pass_t));
   int hash_read = 0;
   FILE *master_fp;
@@ -130,14 +137,16 @@ hashed_pass_t *authenticate(char *master_passd) {
 
       hash_read = fread(hashed_password, sizeof(hashed_pass_t), 1, master_fp);
       if (!hash_read) {
-        fprintf(stderr, "No master password found\n");
+        fprintf(stderr, "PASSWORD_DB is Empty!!!\n");
         free(hashed_password);
+        free(path);
         fclose(master_fp);
         return NULL;
       }
     }
   } else {
     free(hashed_password);
+    free(path);
     perror("Fail To Authencate\n");
     return NULL;
   }
@@ -147,11 +156,13 @@ hashed_pass_t *authenticate(char *master_passd) {
 
     /* wrong password */
     free(hashed_password);
+    free(path);
     fclose(master_fp);
     fprintf(stderr, "Wrong Password...\n");
     return NULL;
   }
   fclose(master_fp);
+  free(path);
   return hashed_password;
 }
 
@@ -209,7 +220,6 @@ int create_new_master_passd(char *master_passd) {
 
       fwrite(new_hashed_password, sizeof(hashed_pass_t), 1, master_fp);
       fclose(master_fp);
-      perror("PASSWORD_DB not found");
       ret = 0;
       goto free_all;
     }
@@ -270,33 +280,32 @@ static void backup_choice(void) {
   char opt;
   initscr();
   do {
-    printw("Do you want to backup your old password database [Y/N]?");
+    printw("Do you want to backup your old password database [Y/N]? ");
     refresh();
     opt = getch(); /* Read character and convert to lowercase */
-  } while ('y' == opt);
 
-  if (opt == 'y') {
-    if (rename("password.db", "password_backup.db") != 0) {
-      perror("Error renaming file");
-      return;
-    }
-    printf(" Old Password Database save\n");
-  } else {
+    if (opt == 'y') {
+      if (rename("password.db", "password_backup.db") != 0) {
+        perror("Error renaming file");
+        return;
+      }
+      printf(" Old Password Database save\n");
+    } else {
 
-    if (remove("password.db") != 0) {
-      perror("Error deleting file");
-      return;
+      if (remove("password.db") != 0) {
+        perror("Error deleting file");
+        return;
+      }
+      printf("Old Password Database Deleted\n");
     }
-    printf("Old Password Database Deleted\n");
-  }
+  } while (TRUE);
 }
 
 void __initcrux() {
   int master_opened = 0;
   char *path = setpath(PATH);
-  printf(" >>>%s\n", path);
   if (chdir(path) != 0) {
-    perror("Change dir");
+    fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
     return;
   }
 
@@ -318,7 +327,6 @@ void __initcrux() {
       return;
     }
 
-    fprintf(stdout, "Create a new Master Password\n");
     new_passd = getpass_custom("New Password: ");
     if (new_passd == NULL) {
       free(path);
