@@ -248,6 +248,7 @@ int export_pass(FILE *password_db, const char *export_file) {
     sodium_free(key);
     return EXIT_FAILURE;
   }
+
   password_t *password = NULL;
   password = malloc(sizeof(password_t));
   if (password == NULL) {
@@ -260,7 +261,7 @@ int export_pass(FILE *password_db, const char *export_file) {
 
   fputs("Username,Password,Description\n", fp);
   while (fread(password, sizeof(password_t), 1, password_db) == 1) {
-    fprintf(fp, " %s,%s,%s\n", password->username, password->passd,
+    fprintf(fp, "%s,%s,%s\n", password->username, password->passd,
             password->description);
   }
 

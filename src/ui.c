@@ -1,5 +1,4 @@
 #include "cruxpass.h"
-#include <cstdio>
 #include <ncurses.h>
 #include <stdio.h>
 #include <string.h>
@@ -54,7 +53,7 @@ char *getpass_custom(char *prompt) {
     i++;
   } while (i < PASSLENGTH && pat != '\n');
 
-  temp_passd[strspn(temp_passd, "\n")] = '\0';
+  temp_passd[strlen(temp_passd) - 1] = '\0';
   if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {
     free(temp_passd);
     fprintf(stdin, "Invalid Password\n");
