@@ -58,6 +58,7 @@ char *getpass_custom(char *prompt) {
     free(temp_passd);
     echo();
     endwin();
+    fprintf(stderr, "Invalid password: max & min, lendht 35 & 8\n");
     return NULL;
   }
 
