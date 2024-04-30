@@ -56,7 +56,8 @@ char *getpass_custom(char *prompt) {
   temp_passd[strlen(temp_passd) - 1] = '\0';
   if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {
     free(temp_passd);
-    fprintf(stdin, "Invalid Password\n");
+    echo();
+    endwin();
     return NULL;
   }
 
