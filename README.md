@@ -1,8 +1,8 @@
 # cruxpass Password management
 
 A simple, secure command-line password manager
-<img src="resources/Sequence #1.gif"
-     alt="cruxpass"/>
+![resources](https://github.com/c0d-0x/Cruxpass-Password-manager/tree/main/resources/Sequence #1.gif)
+     
 
 
 ## Features
