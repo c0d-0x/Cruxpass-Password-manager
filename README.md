@@ -2,7 +2,7 @@
 
 A simple, secure command-line password manager
 
-![[resources](https://github.com/c0d-0x/Cruxpass-Password-manager/tree/main/resources/Sequence #1.gif)](https://github.com/c0d-0x/Cruxpass-Password-manager/tree/main/resources/Sequence #1.gif)
+![https://github.com/c0d-0x/Cruxpass-Password-manager/tree/main/resources/Sequence #1.gif](https://github.com/c0d-0x/Cruxpass-Password-manager/tree/main/resources/Sequence #1.gif)
      
 
 
