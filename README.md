@@ -1,6 +1,6 @@
 # cruxpass Password management
 
-A simple, secure command-line password manager
+![A simple, secure command-line password manager]('resources/Sequence #1.gif')
 
 ## Features
 
