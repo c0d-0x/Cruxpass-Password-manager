@@ -122,6 +122,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
+    __initcrux();
     if (create_new_master_passd(master_passd) != 0) {
       fprintf(stderr, "Fail to Creat a New Password\n");
       sodium_memzero(master_passd, PASSLENGTH);

@@ -300,7 +300,8 @@ static void backup_choice(void) {
     }
   } while (TRUE);
 }
-
+// [TODO] return values for appropreate
+// Error handling for __initcrux;
 void __initcrux() {
   int master_opened = 0;
   char *path = setpath(PATH);
