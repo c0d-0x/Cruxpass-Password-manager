@@ -17,6 +17,7 @@ char *getpass_custom(char *prompt) {
   getmaxyx(stdscr, max_y, max_x);
   if ((win = newwin(3, PASSLENGTH + 2, max_y / 2 + -2,
                     max_x / 2 - PASSLENGTH / 2)) == NULL) {
+    free(temp_passd);
     endwin();
     return NULL;
   }
@@ -58,7 +59,7 @@ char *getpass_custom(char *prompt) {
     free(temp_passd);
     echo();
     endwin();
-    fprintf(stderr, "Invalid password: max & min, lendht 35 & 8\n");
+    fprintf(stderr, "Invalid password: max & min, lenght 35 & 8\n");
     return NULL;
   }
 
@@ -70,8 +71,7 @@ char *getpass_custom(char *prompt) {
 void list_all_passwords(FILE *password_db) {
   // very buggy
   unsigned char *key = NULL;
-  key = decryption_logic();
-  if (key == NULL) {
+  if ((key = decryption_logic()) == NULL) {
     return;
   }
 
@@ -86,6 +86,7 @@ void list_all_passwords(FILE *password_db) {
 
   password_t *password_s = NULL;
   if ((password_s = calloc(1, sizeof(password_t))) == NULL) {
+    remove(".temp_password.db");
     perror("Memory Allocation Fail");
     return;
   }
@@ -118,16 +119,16 @@ void list_all_passwords(FILE *password_db) {
     fclose(password_db);
     remove(".temp_password.db");
     free(password_s);
+    return;
   }
 
   mvprintw(0, cols * 0.1,
            "\tID\t\tUsername\t\t\tPassword\t\t\t\tDescription\n");
   refresh();
   while (fread(password_s, sizeof(password_t), 1, password_db) == 1) {
-    box(page, 0, 0);
     if (current_line >= page_height - 1) {
       wrefresh(page);
-      mvprintw(page_height + 1, 1, "Press right arrow key for next page");
+      mvprintw(page_height + 1, 1, "Press right any key for next page");
       getch();
       wclear(page);
       current_line = 1;
@@ -140,6 +141,7 @@ void list_all_passwords(FILE *password_db) {
     mvwprintw(page, current_line, ACCLENGTH + 15 + PASSLENGTH + 5, "\t%s\n",
               password_s->description);
     current_line++;
+    box(page, 0, 0);
   }
   wrefresh(page);
   getch(); // Wait for a key press before exiting

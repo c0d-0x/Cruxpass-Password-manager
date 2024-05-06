@@ -56,12 +56,12 @@ char *random_password(int password_len) {
     return NULL;
   }
   char pass_bank[] = {
-      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-      'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B',
-      'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-      'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
-      '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=', '{',
-      '}', '[', ']', ';', ':', '<', '@', '>', '?'};
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+      'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+      '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '%', '&', '(',
+      ')', '_', '+', '=', '{', '}', '[', ']', ':', '<', '@', '>', '?'};
   int bank_len = strlen(pass_bank);
   char *password = NULL;
   password = malloc(sizeof(char) * password_len);
@@ -88,12 +88,13 @@ void *setpath(char *home_file_path) {
   }
   const char *home = getenv("HOME");
   if (home == NULL) {
+    free(path);
     return NULL;
   }
+
   sprintf(path, "%s", home);
   strncat(path, home_file_path, (246 - sizeof(home)));
   path[strlen(path)] = '\0';
-
   return path;
 }
 
@@ -109,6 +110,7 @@ unsigned char *decryption_logic() {
   char *path = setpath(PATH);
   if (chdir(path) != 0) {
     fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
+    free(path);
     return NULL;
   }
 

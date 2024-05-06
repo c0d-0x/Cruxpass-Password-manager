@@ -126,6 +126,7 @@ hashed_pass_t *authenticate(char *master_passd) {
   char *path = setpath(PATH);
   if (chdir(path) != 0) {
     fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
+    free(path);
     return NULL;
   }
 
@@ -161,6 +162,7 @@ hashed_pass_t *authenticate(char *master_passd) {
     fprintf(stderr, "Wrong Password...\n");
     return NULL;
   }
+
   fclose(master_fp);
   free(path);
   return hashed_password;
@@ -307,6 +309,7 @@ void __initcrux() {
   char *path = setpath(PATH);
   if (chdir(path) != 0) {
     fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
+    free(path);
     return;
   }
 
@@ -358,6 +361,7 @@ void __initcrux() {
   free_mm:
     if (master_opened)
       fclose(master_fp);
+    free(path);
     free(new_passd);
     free(temp_passd);
     free(pass_hashWsalt);
