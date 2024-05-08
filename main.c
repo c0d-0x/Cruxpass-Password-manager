@@ -1,7 +1,4 @@
 #include "src/cruxpass.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 FILE *password_db = NULL;
 char *master_passd = NULL;

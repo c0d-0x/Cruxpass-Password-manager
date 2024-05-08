@@ -1,7 +1,4 @@
 #include "cruxpass.h"
-#include <stdio.h>
-
-#define PASS_MIN 8
 
 static size_t set_id() {
   FILE *password_db;
@@ -56,12 +53,12 @@ char *random_password(int password_len) {
     return NULL;
   }
   char pass_bank[] = {
-      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-      'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-      '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '%', '&', '(',
-      ')', '_', '+', '=', '{', '}', '[', ']', ':', '<', '@', '>', '?'};
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+      'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B',
+      'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+      'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
+      '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=', '{',
+      '}', '[', '-', ']', ':', '<', '@', '>', '?'};
   int bank_len = strlen(pass_bank);
   char *password = NULL;
   password = malloc(sizeof(char) * password_len);
@@ -71,6 +68,7 @@ char *random_password(int password_len) {
   }
 
   if (sodium_init() == 1) {
+    free(password);
     fprintf(stderr, "Error: Failed to initialize libsodium");
     return NULL;
   }
@@ -205,8 +203,8 @@ int save_password(password_t *password, FILE *password_db) {
     return EXIT_FAILURE;
   }
 
-  size_t id = set_id();
-  if (id == 0) {
+  size_t id_last_pass = set_id();
+  if (id_last_pass == 0) {
     fprintf(stderr, "Fail to set an id\n");
     fclose(password_db);
     sodium_memzero(key, KEY_LEN);
@@ -214,7 +212,7 @@ int save_password(password_t *password, FILE *password_db) {
     return EXIT_FAILURE;
   }
 
-  password->id = id;
+  password->id = id_last_pass;
   if (fwrite(password, sizeof(password_t), 1, password_db) != 1) {
     perror("Fail to save password");
     fclose(password_db);
@@ -252,8 +250,7 @@ int export_pass(FILE *password_db, const char *export_file) {
   }
 
   password_t *password = NULL;
-  password = malloc(sizeof(password_t));
-  if (password == NULL) {
+  if ((password = malloc(sizeof(password_t))) == NULL) {
     perror("Memory Allocation Fail");
     sodium_memzero(key, KEY_LEN);
     remove(".temp_password.db");

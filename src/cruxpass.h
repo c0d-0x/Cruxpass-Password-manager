@@ -21,6 +21,7 @@
 #include <uchar.h>
 #include <unistd.h>
 
+#define PASS_MIN 8
 #define CHUNK_SIZE 4096
 #define PASSLENGTH 35
 #define ACCLENGTH 30
