@@ -84,14 +84,14 @@ void *setpath(char *home_file_path) {
   if ((path = calloc(256, sizeof(char))) == NULL) {
     return NULL;
   }
-  const char *home = getenv("HOME");
+  char *home = getenv("HOME");
   if (home == NULL) {
     free(path);
     return NULL;
   }
 
   sprintf(path, "%s", home);
-  strncat(path, home_file_path, (246 - sizeof(home)));
+  strncat(path, home_file_path, (246 - strlen(home)));
   path[strlen(path)] = '\0';
   return path;
 }
@@ -112,23 +112,21 @@ unsigned char *decryption_logic() {
     return NULL;
   }
 
+  free(path);
   if (sodium_init() == -1) {
     fprintf(stderr, "Error: Failed to initialize libsodium");
-    free(path);
     return NULL;
   }
 
   if ((key = (unsigned char *)sodium_malloc(sizeof(unsigned char) * KEY_LEN)) ==
       NULL) {
     perror("Memory Allocation Fail");
-    free(path);
     return NULL;
   }
 
   if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
     sodium_memzero(key, KEY_LEN);
     sodium_free(key);
-    free(path);
     return NULL;
   }
 
@@ -137,7 +135,6 @@ unsigned char *decryption_logic() {
     sodium_memzero(master_passd, PASSLENGTH);
     sodium_free(key);
     free(master_passd);
-    free(path);
     return NULL;
   }
 
@@ -148,14 +145,12 @@ unsigned char *decryption_logic() {
     sodium_free(key);
     free(hashed_password);
     free(master_passd);
-    free(path);
     return NULL;
   }
 
   if (access("password.db", F_OK) != 0) {
     free(hashed_password);
     sodium_memzero(master_passd, PASSLENGTH);
-    free(path);
     free(master_passd);
     return key;
   }
@@ -167,14 +162,12 @@ unsigned char *decryption_logic() {
     free(hashed_password);
     free(master_passd);
     sodium_free(key);
-    free(path);
     return NULL;
   }
 
   sodium_memzero(master_passd, PASSLENGTH);
   free(hashed_password);
   free(master_passd);
-  free(path);
 
   return key;
 }

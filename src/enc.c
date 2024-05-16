@@ -130,6 +130,7 @@ hashed_pass_t *authenticate(char *master_passd) {
     return NULL;
   }
 
+  free(path);
   hashed_pass_t *hashed_password = malloc(sizeof(hashed_pass_t));
   int hash_read = 0;
   FILE *master_fp;
@@ -140,14 +141,12 @@ hashed_pass_t *authenticate(char *master_passd) {
       if (!hash_read) {
         fprintf(stderr, "PASSWORD_DB is Empty!!!\n");
         free(hashed_password);
-        free(path);
         fclose(master_fp);
         return NULL;
       }
     }
   } else {
     free(hashed_password);
-    free(path);
     perror("Fail To Authencate\n");
     return NULL;
   }
@@ -157,14 +156,12 @@ hashed_pass_t *authenticate(char *master_passd) {
 
     /* wrong password */
     free(hashed_password);
-    free(path);
     fclose(master_fp);
     fprintf(stderr, "Wrong Password...\n");
     return NULL;
   }
 
   fclose(master_fp);
-  free(path);
   return hashed_password;
 }
 
@@ -313,6 +310,7 @@ void __initcrux() {
     return;
   }
 
+  free(path);
   if (access("auth.db", F_OK) != 0) {
     char *new_passd = NULL;
     char *temp_passd = NULL;
@@ -327,13 +325,11 @@ void __initcrux() {
     pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
     if (pass_hashWsalt == NULL) {
       perror("Memory Allocation Fail");
-      free(path);
       return;
     }
 
     new_passd = getpass_custom("New Password: ");
     if (new_passd == NULL) {
-      free(path);
       free(pass_hashWsalt);
       return;
     }
@@ -361,7 +357,6 @@ void __initcrux() {
   free_mm:
     if (master_opened)
       fclose(master_fp);
-    free(path);
     free(new_passd);
     free(temp_passd);
     free(pass_hashWsalt);
