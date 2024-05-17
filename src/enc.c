@@ -125,7 +125,7 @@ hashed_pass_t *authenticate(char *master_passd) {
 
   char *path = setpath(PATH);
   if (chdir(path) != 0) {
-    fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
+    fprintf(stderr, "No DB Directory Found. [Run: make install]\n");
     free(path);
     return NULL;
   }

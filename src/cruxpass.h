@@ -1,5 +1,5 @@
 /**
- * POJECT: cruxpass - A simple password manager
+ * PROJECT: cruxpass - A simple password manager
  * AUTHOR: c0d_0x
  * MIT LICENSE
  */
