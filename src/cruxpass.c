@@ -1,4 +1,6 @@
 #include "cruxpass.h"
+#include <string.h>
+#include <time.h>
 
 static size_t set_id() {
   FILE *password_db;
@@ -58,11 +60,17 @@ char *random_password(int password_len) {
       'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
       'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
       '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=', '{',
-      '}', '[', '-', ']', ':', '<', '@', '>', '?'};
-  int bank_len = strlen(pass_bank);
+      '}', '[', '-', ']', ':', '<', '@', '>', '?', '\0'};
+
+  int i, bank_len = -1;
   char *password = NULL;
-  password = malloc(sizeof(char) * password_len);
-  if (password == NULL) {
+  bank_len = strlen(pass_bank);
+  if (bank_len <= 0) {
+    perror("Error: Strln Failed");
+    return NULL;
+  }
+
+  if ((password = malloc(sizeof(char) * password_len)) == NULL) {
     perror("Fail to creat password");
     return NULL;
   }
@@ -73,7 +81,7 @@ char *random_password(int password_len) {
     return NULL;
   }
 
-  for (int i = 0; i < password_len; i++) {
+  for (i = 0; i < password_len && i < bank_len; i++) {
     password[i] += pass_bank[(int)randombytes_uniform(bank_len)];
   }
   return password;
@@ -123,7 +131,6 @@ unsigned char *decryption_logic() {
     perror("Memory Allocation Fail");
     return NULL;
   }
-
   if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
     sodium_memzero(key, KEY_LEN);
     sodium_free(key);
@@ -392,7 +399,6 @@ int delete_password(FILE *password_db, size_t id) {
   if ((key = decryption_logic()) == NULL) {
     fprintf(stderr, "could not generate key\n");
     free(password);
-    fclose(temp_bin);
     remove(".temp.db");
     return EXIT_FAILURE;
   }

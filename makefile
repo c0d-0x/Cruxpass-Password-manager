@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -Wformat-security -fsanitize=address -Wstrict-overflow=4 -fsanitize=leak
+CFLAGS = -Wall -Wextra -Wformat-security -Wstrict-overflow=4 
 LIBS = -lsodium -lncurses
 MAIN = main.c
 
