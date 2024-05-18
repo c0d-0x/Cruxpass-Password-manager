@@ -15,7 +15,7 @@ char *getpass_custom(char *prompt) {
   int max_y, max_x;
   WINDOW *win = NULL;
   getmaxyx(stdscr, max_y, max_x);
-  if ((win = newwin(3, PASSLENGTH + 2, max_y / 2 + -2,
+  if ((win = newwin(3, PASSLENGTH + 2, (max_y / 2) - 2,
                     max_x / 2 - PASSLENGTH / 2)) == NULL) {
     free(temp_passd);
     endwin();
@@ -69,7 +69,7 @@ char *getpass_custom(char *prompt) {
 }
 
 void list_all_passwords(FILE *password_db) {
-  // very buggy
+
   unsigned char *key = NULL;
   if ((key = decryption_logic()) == NULL) {
     return;
@@ -99,9 +99,9 @@ void list_all_passwords(FILE *password_db) {
   }
 
   /* printing passwords in a window*/
-  int rows, cols, page_height, page_width;
+  size_t rows, cols, page_height, page_width;
   WINDOW *page;
-  int current_line = 1;
+  size_t current_line = 1;
 
   initscr();
   noecho();
@@ -133,6 +133,7 @@ void list_all_passwords(FILE *password_db) {
       wclear(page);
       current_line = 1;
     }
+
     mvwprintw(page, current_line, 1, "\t%ld\t%s", password_s->id,
               password_s->username);
 

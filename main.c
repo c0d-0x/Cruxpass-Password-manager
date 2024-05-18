@@ -29,8 +29,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    password = malloc(sizeof(password_t));
-    if (password == NULL) {
+    if ((password = malloc(sizeof(password_t))) == NULL) {
       perror("Memory allocation fail");
       return 1;
     }
@@ -40,8 +39,8 @@ int main(int argc, char *argv[]) {
     strncpy(password->description, argv[4], DESCLENGTH);
     if (save_password(password, password_db) == 0) {
       printf("Password saved...\n");
-      free(password);
     }
+    free(password);
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
     __initcrux();
     list_all_passwords(password_db);

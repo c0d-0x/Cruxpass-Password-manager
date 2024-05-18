@@ -1,4 +1,5 @@
 #include "cruxpass.h"
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -147,25 +148,26 @@ unsigned char *decryption_logic() {
 
   if (generate_key_pass_hash(key, NULL, master_passd, hashed_password->salt,
                              0) != 0) {
-    sodium_memzero(key, KEY_LEN);
+    fprintf(stderr, "Fail to generate description key\n");
     sodium_memzero(master_passd, PASSLENGTH);
-    sodium_free(key);
+    sodium_memzero(key, KEY_LEN);
     free(hashed_password);
     free(master_passd);
+    sodium_free(key);
     return NULL;
   }
 
   if (access("password.db", F_OK) != 0) {
-    free(hashed_password);
     sodium_memzero(master_passd, PASSLENGTH);
+    free(hashed_password);
     free(master_passd);
     return key;
   }
 
   if (decrypt(".temp_password.db", "password.db", key) != 0) {
     fprintf(stderr, "Fail to decrypt PASSWORD_DB");
-    sodium_memzero(key, KEY_LEN);
     sodium_memzero(master_passd, PASSLENGTH);
+    sodium_memzero(key, KEY_LEN);
     free(hashed_password);
     free(master_passd);
     sodium_free(key);
