@@ -147,7 +147,7 @@ hashed_pass_t *authenticate(char *master_passd) {
     }
   } else {
     free(hashed_password);
-    perror("Fail To Authencate\n");
+    perror("Fail To Authenticate\n");
     return NULL;
   }
 

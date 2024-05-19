@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
     if (argc != 3) {
-      printf("usage: cruxpass -r <password lenght> \n");
+      printf("usage: cruxpass -r <password length> \n");
       return EXIT_FAILURE;
     }
 
