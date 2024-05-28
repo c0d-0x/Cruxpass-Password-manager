@@ -1,8 +1,4 @@
 #include "cruxpass.h"
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
 static size_t set_id() {
   FILE *password_db;
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {

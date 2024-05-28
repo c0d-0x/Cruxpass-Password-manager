@@ -110,9 +110,9 @@ void list_all_passwords(FILE *password_db) {
   getmaxyx(stdscr, rows, cols);
 
   page_height = rows - 2; /*Adjust for borders*/
-  page_width = cols * 0.8;
+  page_width = cols * 0.85;
 
-  if ((page = newwin(page_height, page_width, 1, cols * 0.1)) ==
+  if ((page = newwin(page_height, page_width, 1, cols * 0.08)) ==
       NULL) { /* Create window with 1px border*/
     echo();
     endwin();
