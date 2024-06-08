@@ -26,6 +26,7 @@
 #define PASSLENGTH 35
 #define ACCLENGTH 30
 #define DESCLENGTH 56
+#define BANK_LEN 78
 #define BUFFMAX PASSLENGTH + ACCLENGTH + DESCLENGTH
 #define KEY_LEN crypto_box_SEEDBYTES
 #define PASS_HASH_LEN crypto_pwhash_STRBYTES

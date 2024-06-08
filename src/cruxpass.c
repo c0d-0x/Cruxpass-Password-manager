@@ -59,15 +59,9 @@ char *random_password(int password_len) {
       '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=', '{',
       '}', '[', '-', ']', ':', '<', '@', '>', '?', '\0'};
 
-  int i, bank_len = -1;
+  int i;
   char *password = NULL;
-  bank_len = strlen(pass_bank);
-  if (bank_len <= 0) {
-    perror("Error: Strln Failed");
-    return NULL;
-  }
-
-  if ((password = malloc(sizeof(char) * password_len)) == NULL) {
+   if ((password = malloc(sizeof(char) * password_len)) == NULL) {
     perror("Fail to creat password");
     return NULL;
   }
@@ -78,8 +72,8 @@ char *random_password(int password_len) {
     return NULL;
   }
 
-  for (i = 0; i < password_len && i < bank_len; i++) {
-    password[i] += pass_bank[(int)randombytes_uniform(bank_len)];
+  for (i = 0; i < password_len && i < BANK_LEN; i++) {
+    password[i] += pass_bank[(int)randombytes_uniform(BANK_LEN)];
   }
   return password;
 }

@@ -4,6 +4,7 @@ test
 *.o
 *.txt
 *.bin
+.idea
 .vscode
 main
 cruxpass
