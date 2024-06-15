@@ -49,7 +49,7 @@ typedef struct {
  * Prints the help menu to the terminal.
  */
 void help();
-void __initcrux();
+size_t __initcrux();
 /**
  * Generates a random password of the specified length.
  *

@@ -1,6 +1,8 @@
 #include "cruxpass.h"
 #include <ncurses.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int generate_key_pass_hash(unsigned char *key, char *hashed_password,
                            const char *const new_passd, unsigned char *salt,
@@ -275,63 +277,45 @@ free_all:
   return ret;
 }
 
-static void backup_choice(void) {
-  char opt;
-  initscr();
-  do {
-    printw("Do you want to backup your old password database [Y/N]? ");
-    refresh();
-    opt = getch(); /* Read character and convert to lowercase */
-
-    if (opt == 'y') {
-      if (rename("password.db", "password_backup.db") != 0) {
-        perror("Error renaming file");
-        return;
-      }
-      printf(" Old Password Database save\n");
-    } else {
-
-      if (remove("password.db") != 0) {
-        perror("Error deleting file");
-        return;
-      }
-      printf("Old Password Database Deleted\n");
-    }
-  } while (TRUE);
-}
 // [TODO] return values for appropreate
 // Error handling for __initcrux;
-void __initcrux() {
-  int master_opened = 0;
+size_t __initcrux() {
   char *path = setpath(PATH);
+  size_t RETURN_VAL = EXIT_FAILURE;
   if (chdir(path) != 0) {
     fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
     free(path);
-    return;
+    return RETURN_VAL;
   }
 
   free(path);
   if (access("auth.db", F_OK) != 0) {
     char *new_passd = NULL;
     char *temp_passd = NULL;
+    FILE *master_fp = NULL;
     hashed_pass_t *pass_hashWsalt = NULL;
 
     if (access("password.db", F_OK) == 0) {
       fprintf(stdout, "There is a PASSWORD_DB found...\n");
-      backup_choice();
+      if (rename("password.db", "password_backup.db") != 0) {
+        fprintf(stderr,
+                "Error backing up PASSWORD_DB, please remove manually\n");
+        return RETURN_VAL;
+      }
+
+      printf("Old Password Database renamed as 'password_backup.db'!! \n");
     }
 
-    FILE *master_fp;
     pass_hashWsalt = calloc(1, sizeof(hashed_pass_t));
     if (pass_hashWsalt == NULL) {
       perror("Memory Allocation Fail");
-      return;
+      return RETURN_VAL;
     }
 
     new_passd = getpass_custom("New Password: ");
     if (new_passd == NULL) {
       free(pass_hashWsalt);
-      return;
+      return RETURN_VAL;
     }
 
     temp_passd = getpass_custom("Confirm Password: ");
@@ -353,13 +337,15 @@ void __initcrux() {
     }
 
     fwrite(pass_hashWsalt, sizeof(hashed_pass_t), 1, master_fp);
+    RETURN_VAL = EXIT_SUCCESS;
 
   free_mm:
-    if (master_opened)
+    if (master_fp != NULL)
       fclose(master_fp);
     free(new_passd);
     free(temp_passd);
     free(pass_hashWsalt);
-    return;
   }
+
+  return RETURN_VAL;
 }

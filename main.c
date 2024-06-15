@@ -1,4 +1,6 @@
 #include "src/cruxpass.h"
+#include <sodium/utils.h>
+#include <stdio.h>
 
 FILE *password_db = NULL;
 char *master_passd = NULL;
@@ -20,7 +22,11 @@ int main(int argc, char *argv[]) {
               argv[0]);
       return EXIT_FAILURE;
     }
-    __initcrux();
+    if (__initcrux() == 0) {
+      fprintf(stderr,
+              "Your new master Password has been save!! Run cruxpass again!!");
+      return EXIT_SUCCESS;
+    }
     if ((strlen(argv[2]) > PASSLENGTH) ||
         (strlen(argv[3]) > ACCLENGTH || (strlen(argv[4]) > DESCLENGTH))) {
       fprintf(stderr,
@@ -42,7 +48,12 @@ int main(int argc, char *argv[]) {
     }
     free(password);
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
-    __initcrux();
+    if (__initcrux() != 0) {
+      fprintf(stderr,
+              "Your new master Password has been save!! Run cruxpass again!!");
+      return EXIT_SUCCESS;
+    }
+
     list_all_passwords(password_db);
 
   } else if (strncmp(argv[1], "-r", sizeof(char) * 2) == 0) {
@@ -76,7 +87,11 @@ int main(int argc, char *argv[]) {
 
     export_file_path[strlen(export_file_path)] = '/';
     strncat(export_file_path, argv[2], sizeof(char) * 15);
-    __initcrux();
+    if (__initcrux() == 0) {
+      fprintf(stderr,
+              "Your new master Password has been save!! Run cruxpass again!!");
+      return EXIT_SUCCESS;
+    }
     if (export_pass(password_db, export_file_path) == 0) {
       printf("Passwords exported to %s", argv[2]);
       return EXIT_FAILURE;
@@ -97,7 +112,11 @@ int main(int argc, char *argv[]) {
       perror("Import File");
       return EXIT_FAILURE;
     }
-    __initcrux();
+    if (__initcrux() == 0) {
+      fprintf(stderr,
+              "Your new master Password has been save!! Run cruxpass again!!");
+      return EXIT_SUCCESS;
+    }
     import_pass(password_db, real_path);
   } else if (strncmp(argv[1], "-d", sizeof(char) * 2) == 0) {
 
@@ -106,7 +125,11 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    __initcrux();
+    if (__initcrux() == 0) {
+      fprintf(stderr,
+              "Your new master Password has been save!! Run cruxpass again!!");
+      return EXIT_SUCCESS;
+    }
     size_t id = atoi(argv[2]);
     if (delete_password(password_db, id) != 0) {
       fprintf(stderr, "Password was not found...\n");
@@ -118,11 +141,15 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    __initcrux();
+    if (__initcrux() == 0) {
+      fprintf(stderr,
+              "Your new master Password has been save!! Run cruxpass again!!");
+      return EXIT_SUCCESS;
+    }
     if (create_new_master_passd(master_passd) != 0) {
       fprintf(stderr, "Fail to Creat a New Password\n");
       sodium_memzero(master_passd, PASSLENGTH);
-      free(master_passd);
+      sodium_free(master_passd);
       return EXIT_FAILURE;
     }
   } else {
@@ -131,7 +158,7 @@ int main(int argc, char *argv[]) {
 
   if (master_passd) {
     sodium_memzero(master_passd, PASSLENGTH);
-    free(master_passd);
+    sodium_free(master_passd);
   }
 
   return EXIT_SUCCESS;
