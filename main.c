@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     }
     free(password);
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
-    if (__initcrux() != 0) {
+    if (__initcrux() == 0) {
       fprintf(stderr,
               "Your new master Password has been save!! Run cruxpass again!!");
       return EXIT_SUCCESS;

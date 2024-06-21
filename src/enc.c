@@ -281,14 +281,13 @@ free_all:
 // Error handling for __initcrux;
 size_t __initcrux() {
   char *path = setpath(PATH);
-  size_t RETURN_VAL = EXIT_FAILURE;
+  size_t RETURN_VAL = 1;
   if (chdir(path) != 0) {
     fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
     free(path);
     return RETURN_VAL;
   }
 
-  free(path);
   if (access("auth.db", F_OK) != 0) {
     char *new_passd = NULL;
     char *temp_passd = NULL;
@@ -337,7 +336,7 @@ size_t __initcrux() {
     }
 
     fwrite(pass_hashWsalt, sizeof(hashed_pass_t), 1, master_fp);
-    RETURN_VAL = EXIT_SUCCESS;
+    RETURN_VAL = 0;
 
   free_mm:
     if (master_fp != NULL)
@@ -346,6 +345,6 @@ size_t __initcrux() {
     free(temp_passd);
     free(pass_hashWsalt);
   }
-
+  free(path);
   return RETURN_VAL;
 }
