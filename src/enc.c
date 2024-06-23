@@ -277,8 +277,6 @@ free_all:
   return ret;
 }
 
-// [TODO] return values for appropreate
-// Error handling for __initcrux;
 size_t __initcrux() {
   char *path = setpath(PATH);
   size_t RETURN_VAL = 1;

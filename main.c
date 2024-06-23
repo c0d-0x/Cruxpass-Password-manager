@@ -2,16 +2,6 @@
 #include <sodium/utils.h>
 #include <stdio.h>
 
-//  size_t init_wrapper(void) {
-//   if (__initcrux() == 0) {
-//     fprintf(stderr,
-//             "Your new master Password has been save!! Run cruxpass
-//             again!!\n");
-//     return EXIT_SUCCESS;
-//   }
-//   return EXIT_FAILURE;
-// }
-
 FILE *password_db = NULL;
 char *master_passd = NULL;
 
