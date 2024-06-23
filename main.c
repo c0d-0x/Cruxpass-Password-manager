@@ -2,6 +2,16 @@
 #include <sodium/utils.h>
 #include <stdio.h>
 
+//  size_t init_wrapper(void) {
+//   if (__initcrux() == 0) {
+//     fprintf(stderr,
+//             "Your new master Password has been save!! Run cruxpass
+//             again!!\n");
+//     return EXIT_SUCCESS;
+//   }
+//   return EXIT_FAILURE;
+// }
+
 FILE *password_db = NULL;
 char *master_passd = NULL;
 
@@ -49,8 +59,9 @@ int main(int argc, char *argv[]) {
     free(password);
   } else if (strncmp(argv[1], "-l", sizeof(char) * 2) == 0) {
     if (__initcrux() == 0) {
-      fprintf(stderr,
-              "Your new master Password has been save!! Run cruxpass again!!");
+      fprintf(
+          stderr,
+          "Your new master Password has been save!! Run cruxpass again!!\n");
       return EXIT_SUCCESS;
     }
 
@@ -88,8 +99,9 @@ int main(int argc, char *argv[]) {
     export_file_path[strlen(export_file_path)] = '/';
     strncat(export_file_path, argv[2], sizeof(char) * 15);
     if (__initcrux() == 0) {
-      fprintf(stderr,
-              "Your new master Password has been save!! Run cruxpass again!!");
+      fprintf(
+          stderr,
+          "Your new master Password has been save!! Run cruxpass again!!\n");
       return EXIT_SUCCESS;
     }
     if (export_pass(password_db, export_file_path) == 0) {
@@ -113,8 +125,9 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     if (__initcrux() == 0) {
-      fprintf(stderr,
-              "Your new master Password has been save!! Run cruxpass again!!");
+      fprintf(
+          stderr,
+          "Your new master Password has been save!! Run cruxpass again!!\n");
       return EXIT_SUCCESS;
     }
     import_pass(password_db, real_path);
@@ -126,8 +139,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (__initcrux() == 0) {
-      fprintf(stderr,
-              "Your new master Password has been save!! Run cruxpass again!!");
+      fprintf(
+          stderr,
+          "Your new master Password has been save!! Run cruxpass again!!\n");
       return EXIT_SUCCESS;
     }
     size_t id = atoi(argv[2]);

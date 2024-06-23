@@ -311,14 +311,13 @@ size_t __initcrux() {
       return RETURN_VAL;
     }
 
-    new_passd = getpass_custom("New Password: ");
-    if (new_passd == NULL) {
+    if ((new_passd = getpass_custom("New Password: ")) == NULL) {
       free(pass_hashWsalt);
       return RETURN_VAL;
     }
 
     temp_passd = getpass_custom("Confirm Password: ");
-    if (strcmp(new_passd, temp_passd) != 0) {
+    if (strncmp(new_passd, temp_passd, PASSLENGTH) != 0) {
       fprintf(stderr, "Passwords Do Not Match\n");
       goto free_mm;
     }
