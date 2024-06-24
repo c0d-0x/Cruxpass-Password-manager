@@ -52,7 +52,7 @@ char *getpass_custom(char *prompt) {
     wrefresh(win);
     temp_passd[i] = pat;
     i++;
-  } while (i < PASSLENGTH && pat != '\n');
+  } while (i <= PASSLENGTH && pat != '\n');
 
   temp_passd[strlen(temp_passd) - 1] = '\0';
   if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {

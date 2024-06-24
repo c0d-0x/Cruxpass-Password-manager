@@ -61,7 +61,7 @@ char *random_password(int password_len) {
 
   int i;
   char *password = NULL;
-   if ((password = malloc(sizeof(char) * password_len)) == NULL) {
+  if ((password = malloc(sizeof(char) * password_len)) == NULL) {
     perror("Fail to creat password");
     return NULL;
   }
