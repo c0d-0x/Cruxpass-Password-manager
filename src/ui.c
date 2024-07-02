@@ -4,10 +4,9 @@
 #include <string.h>
 
 char *getpass_custom(char *prompt) {
-
-  char *temp_passd = calloc(PASSLENGTH, sizeof(char));
-  if (temp_passd == NULL) {
-    perror("calloc");
+  char *temp_passd;
+  if ((temp_passd = calloc(PASSLENGTH, sizeof(char))) == NULL) {
+    perror("Fail to read password");
     return NULL;
   }
 
@@ -52,7 +51,7 @@ char *getpass_custom(char *prompt) {
     wrefresh(win);
     temp_passd[i] = pat;
     i++;
-  } while (i <= PASSLENGTH && pat != '\n');
+  } while (i < PASSLENGTH && pat != '\n');
 
   temp_passd[strlen(temp_passd) - 1] = '\0';
   if (strlen(temp_passd) < 8 || strlen(temp_passd) > PASSLENGTH) {

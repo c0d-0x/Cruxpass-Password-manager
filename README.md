@@ -16,14 +16,14 @@ cruxPass <option> <argument>
 Use code with caution. Learn more
 Available options:
 
-- -n: creates a new master password
+- -n: creates a new master password for cruxPass
 - -d: \<password id\>: Deletes a password by id
 - -e: \<file name\>: Export all saved passwords to a csv format
 - -h: Display help information
 - -i: \<file name\>: Import passwords from a csv file
 - -l: List all saved passwords
 - -r: Generate a random 35 characters long password without storing it
-- -s: \<password\> \<username\> \<discretion\>: Generate a password and store it for the specified username
+- -s: \<password\> \<username\> \<discretion\>: Saves your password and the specified details.
 
 ## Installation
 
@@ -73,7 +73,6 @@ For any questions or feedback, please contact <c0d_0x007@proton.me>.
 This project is currently under development.
 Future plans include:
 
-- Support for multiple password databases
 - Better encryption implementation
 - Integration with other password management tools
 - Integration with sql-light for password storage
