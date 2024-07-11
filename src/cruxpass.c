@@ -1,13 +1,13 @@
 #include "cruxpass.h"
 static size_t set_id() {
-  FILE *password_db;
+  FILE* password_db;
   if ((password_db = fopen(".temp_password.db", "rb")) == NULL) {
     perror("Fail to open password_db");
     return 0;
   }
 
   size_t temp_id = 0;
-  password_t *temp_pass = NULL;
+  password_t* temp_pass = NULL;
   temp_pass = malloc(sizeof(password_t));
 
   if (temp_pass == NULL) {
@@ -22,7 +22,8 @@ static size_t set_id() {
     if (fread(temp_pass, sizeof(password_t), 1, password_db) == 1) {
       temp_id = temp_pass->id + 1;
     }
-  } else {
+  }
+  else {
     temp_id = 1;
   }
 
@@ -33,20 +34,20 @@ static size_t set_id() {
 
 void help() {
   printf("\tusage: cruxPass <option> <password> <username--optional--> "
-         "<description>\n");
+    "<description>\n");
 
   printf(
-      "\t-h: shows this help\n \t-s: stores a password\n \t-r: "
-      "generates "
-      "a random password and takes no arguments\n \t-d: deletes a password by "
-      "id\n \t-n: creates a new master password\n \t-l: list "
-      "all saved "
-      "passwords and takes no arguments \n \t-e: Exports all passwords to a "
-      "csv file\n \t-i: imports "
-      "passwords from a csv file\n");
+    "\t-h: shows this help\n \t-s: stores a password\n \t-r: "
+    "generates "
+    "a random password and takes no arguments\n \t-d: deletes a password by "
+    "id\n \t-n: creates a new master password\n \t-l: list "
+    "all saved "
+    "passwords and takes no arguments \n \t-e: Exports all passwords to a "
+    "csv file\n \t-i: imports "
+    "passwords from a csv file\n");
 }
 
-char *random_password(int password_len) {
+char* random_password(int password_len) {
   if (password_len < PASS_MIN || password_len > PASSLENGTH) {
     printf("Password must be at least 8 & 35 characters long\n");
     return NULL;
@@ -57,10 +58,10 @@ char *random_password(int password_len) {
       'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
       'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
       '5', '6', '7', '8', '9', '#', '%', '&', '(', ')', '_', '+', '=', '{',
-      '}', '[', '-', ']', ':', '<', '@', '>', '?', '\0'};
+      '}', '[', '-', ']', ':', '<', '@', '>', '?', '\0' };
 
   int i;
-  char *password = NULL;
+  char* password = NULL;
   if ((password = malloc(sizeof(char) * password_len)) == NULL) {
     perror("Fail to creat password");
     return NULL;
@@ -78,12 +79,12 @@ char *random_password(int password_len) {
   return password;
 }
 
-void *setpath(char *home_file_path) {
-  char *path = NULL;
+void* setpath(char* home_file_path) {
+  char* path = NULL;
   if ((path = calloc(256, sizeof(char))) == NULL) {
     return NULL;
   }
-  char *home = getenv("HOME");
+  char* home = getenv("HOME");
   if (home == NULL) {
     free(path);
     return NULL;
@@ -98,13 +99,13 @@ void *setpath(char *home_file_path) {
 /**
  * decrypts a file and return a key for encryption.
  */
-unsigned char *decryption_logic() {
+unsigned char* decryption_logic() {
 
-  char *master_passd = NULL;
-  unsigned char *key;
-  hashed_pass_t *hashed_password;
+  char* master_passd = NULL;
+  unsigned char* key;
+  hashed_pass_t* hashed_password;
 
-  char *path = setpath(PATH);
+  char* path = setpath(PATH);
   if (chdir(path) != 0) {
     fprintf(stderr, "Not DB Directory Found. [Run: make install]\n");
     free(path);
@@ -117,8 +118,8 @@ unsigned char *decryption_logic() {
     return NULL;
   }
 
-  if ((key = (unsigned char *)sodium_malloc(sizeof(unsigned char) * KEY_LEN)) ==
-      NULL) {
+  if ((key = (unsigned char*)sodium_malloc(sizeof(unsigned char) * KEY_LEN)) ==
+    NULL) {
     perror("Memory Allocation Fail");
     return NULL;
   }
@@ -137,7 +138,7 @@ unsigned char *decryption_logic() {
   }
 
   if (generate_key_pass_hash(key, NULL, master_passd, hashed_password->salt,
-                             0) != 0) {
+    0) != 0) {
     fprintf(stderr, "Fail to generate description key\n");
     sodium_memzero(master_passd, PASSLENGTH);
     sodium_memzero(key, KEY_LEN);
@@ -171,7 +172,7 @@ unsigned char *decryption_logic() {
   return key;
 }
 
-static void encryption_logic(unsigned char *key) {
+static void encryption_logic(unsigned char* key) {
   remove("password.db");
   if (encrypt("password.db", ".temp_password.db", key) != 0) {
     fprintf(stderr, "Fail to encrypt PASSWORD_DB\n");
@@ -183,8 +184,8 @@ static void encryption_logic(unsigned char *key) {
   remove(".temp_password.db");
 }
 
-int save_password(password_t *password, FILE *password_db) {
-  unsigned char *key;
+int save_password(password_t* password, FILE* password_db) {
+  unsigned char* key;
   if ((key = decryption_logic()) == NULL) {
     return EXIT_FAILURE;
   }
@@ -218,13 +219,13 @@ int save_password(password_t *password, FILE *password_db) {
   return EXIT_SUCCESS;
 }
 
-int export_pass(FILE *password_db, const char *export_file) {
-  unsigned char *key;
+int export_pass(FILE* password_db, const char* export_file) {
+  unsigned char* key;
   if ((key = decryption_logic()) == NULL) {
     return EXIT_FAILURE;
   }
 
-  FILE *fp;
+  FILE* fp;
   if ((fp = fopen(export_file, "wb")) == NULL) {
     perror("Fail to Export");
     sodium_memzero(key, KEY_LEN);
@@ -241,7 +242,7 @@ int export_pass(FILE *password_db, const char *export_file) {
     return EXIT_FAILURE;
   }
 
-  password_t *password = NULL;
+  password_t* password = NULL;
   if ((password = malloc(sizeof(password_t))) == NULL) {
     perror("Memory Allocation Fail");
     sodium_memzero(key, KEY_LEN);
@@ -253,7 +254,7 @@ int export_pass(FILE *password_db, const char *export_file) {
   fputs("Username,Password,Description\n", fp);
   while (fread(password, sizeof(password_t), 1, password_db) == 1) {
     fprintf(fp, "%s,%s,%s\n", password->username, password->passd,
-            password->description);
+      password->description);
   }
 
   fclose(fp);
@@ -269,36 +270,36 @@ int export_pass(FILE *password_db, const char *export_file) {
  * @field_name: for error handling
  * @line_number also for error handling
  */
-static int process_field(char *field, const int max_length, char *token,
-                         const char *field_name, size_t line_number) {
+static int process_field(char* field, const int max_length, char* token,
+  const char* field_name, size_t line_number) {
   if (token == NULL) {
     fprintf(stderr, "Missing %s at line %ld\n", field_name, line_number);
     return EXIT_FAILURE;
   }
   if ((const int)strlen(token) > max_length) {
     fprintf(stderr, "%s at line %ld is more than %d characters\n", field_name,
-            line_number, max_length);
+      line_number, max_length);
     return EXIT_FAILURE;
   }
   strncpy(field, token, max_length);
   return EXIT_SUCCESS;
 }
 
-void import_pass(FILE *password_db, char *import_file) {
+void import_pass(FILE* password_db, char* import_file) {
 
   if (access(import_file, F_OK) != 0) {
     perror("Fail to import passwords");
     return;
   }
 
-  FILE *fp;
+  FILE* fp;
   if ((fp = fopen(import_file, "r")) == NULL) {
     perror("Fail to import passwords");
     free(import_file);
     return;
   }
 
-  unsigned char *key;
+  unsigned char* key;
   if ((key = decryption_logic()) == NULL) {
     fclose(fp);
     free(import_file);
@@ -315,9 +316,9 @@ void import_pass(FILE *password_db, char *import_file) {
   }
 
   size_t line_number = 1;
-  char *saveptr;
+  char* saveptr;
   char buffer[BUFFMAX + 1];
-  password_t *password = NULL;
+  password_t* password = NULL;
   password = malloc(sizeof(password_t));
   if (password == NULL) {
     perror("Memory Allocation");
@@ -343,22 +344,22 @@ void import_pass(FILE *password_db, char *import_file) {
     buffer[strcspn(buffer, "\n")] = '\0'; /*Remove trailing newline*/
 
     if (process_field(password->username, ACCLENGTH,
-                      strtok_r(buffer, ",", &saveptr), "Username",
-                      line_number) != 0) {
+      strtok_r(buffer, ",", &saveptr), "Username",
+      line_number) != 0) {
       line_number++;
       continue;
     }
 
     if (process_field(password->passd, PASSLENGTH,
-                      strtok_r(NULL, ",", &saveptr), "Password",
-                      line_number) != 0) {
+      strtok_r(NULL, ",", &saveptr), "Password",
+      line_number) != 0) {
       line_number++;
       continue;
     }
 
     if (process_field(password->description, DESCLENGTH,
-                      strtok_r(NULL, ",", &saveptr), "Description",
-                      line_number) != 0) {
+      strtok_r(NULL, ",", &saveptr), "Description",
+      line_number) != 0) {
       line_number++;
       continue;
     }
@@ -375,10 +376,10 @@ void import_pass(FILE *password_db, char *import_file) {
   return;
 }
 
-int delete_password(FILE *password_db, size_t id) {
+int delete_password(FILE* password_db, size_t id) {
 
-  FILE *temp_bin = NULL;
-  password_t *password = NULL;
+  FILE* temp_bin = NULL;
+  password_t* password = NULL;
   int password_deleted = 0;
   password = malloc(sizeof(password_t));
 
@@ -387,7 +388,7 @@ int delete_password(FILE *password_db, size_t id) {
     return EXIT_FAILURE;
   }
 
-  unsigned char *key;
+  unsigned char* key;
   if ((key = decryption_logic()) == NULL) {
     fprintf(stderr, "could not generate key\n");
     free(password);
@@ -414,9 +415,9 @@ int delete_password(FILE *password_db, size_t id) {
 
     if (password->id == id) {
       printf("ID: %ld\nUsername: %s\nPassword: %s\nDescription: %s\n<Password "
-             "Deleted>\n",
-             password->id, password->username, password->passd,
-             password->description);
+        "Deleted>\n",
+        password->id, password->username, password->passd,
+        password->description);
       password_deleted = 1;
       continue;
     }
@@ -436,7 +437,8 @@ int delete_password(FILE *password_db, size_t id) {
     rename(".temp.db", ".temp_password.db");
     free(password);
     encryption_logic(key);
-  } else {
+  }
+  else {
     sodium_memzero(key, KEY_LEN);
     sodium_free(key);
     free(password);
