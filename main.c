@@ -1,12 +1,12 @@
-#include "src/cruxpass.h"
 #include <sodium/utils.h>
 #include <stdio.h>
+
+#include "src/cruxpass.h"
 
 FILE *password_db = NULL;
 char *master_passd = NULL;
 
 int main(int argc, char *argv[]) {
-
   if (argc < 2) {
     help();
     return EXIT_FAILURE;
@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
   if (strncmp(argv[1], "-h", sizeof(char) * 2) == 0) {
     help();
   } else if (strncmp(argv[1], "-s", sizeof(char) * 2) == 0) {
-
     if (argc != 5) {
       fprintf(stderr, " usage: %s <-s> <password> <username> <description>\n",
               argv[0]);
@@ -122,7 +121,6 @@ int main(int argc, char *argv[]) {
     }
     import_pass(password_db, real_path);
   } else if (strncmp(argv[1], "-d", sizeof(char) * 2) == 0) {
-
     if (argc != 3) {
       fprintf(stderr, " usage: %s <-d> <password ID>\n", argv[0]);
       return EXIT_FAILURE;
@@ -140,7 +138,6 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
   } else if (strncmp(argv[1], "-n", 3) == 0) {
-
     if ((master_passd = getpass_custom("Master Password: ")) == NULL) {
       return EXIT_FAILURE;
     }
