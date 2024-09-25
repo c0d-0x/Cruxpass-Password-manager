@@ -1,7 +1,8 @@
-#include "cruxpass.h"
 #include <ncurses.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "cruxpass.h"
 
 char *getpass_custom(char *prompt) {
   char *temp_passd;
@@ -68,7 +69,6 @@ char *getpass_custom(char *prompt) {
 }
 
 void list_all_passwords(FILE *password_db) {
-
   unsigned char *key = NULL;
   if ((key = decryption_logic()) == NULL) {
     return;
@@ -144,7 +144,7 @@ void list_all_passwords(FILE *password_db) {
     box(page, 0, 0);
   }
   wrefresh(page);
-  getch(); // Wait for a key press before exiting
+  getch();  // Wait for a key press before exiting
   echo();
   endwin();
 
