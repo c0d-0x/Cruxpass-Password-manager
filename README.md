@@ -34,13 +34,14 @@ Clone this repository:
 git clone https://github.com/c0d-0x/Cruxpass-Password-manager
 
 #Compile the code:
-cd cruxPass
+cd cruxpass
 make intstall
 
 #Run the program:
 Bash
-cruxPass <option> <argument>
+cruxpass <option> <argument>
 
+#Uninstallation
 uninstall with: make uninstall
 ```
 
