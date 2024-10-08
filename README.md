@@ -37,19 +37,12 @@ cd Cruxpass-Password-manager
 mkdir bin # cruxpass binary is build here
 make intstall
 
-#Compile the code:
-cd Cruxpass-Password-manager
-mkdir bin # cruxpass binary is build here
-make # build cruxpass binary
-make intstall # intstall
-
-#Run the program:
+# Run the program:
 cruxpass <option> <argument>
 
-#uninstallation:
+#Uninstallation
 make uninstall
 ```
-
 Use this code with caution!!!
 
 ## Security Considerations
