@@ -33,29 +33,20 @@ Clone this repository:
 
 git clone https://github.com/c0d-0x/Cruxpass-Password-manager
 
-<<<<<<< HEAD
 cd Cruxpass-Password-manager
 mkdir bin # cruxpass binary is build here
 make intstall
-=======
+
 #Compile the code:
 cd Cruxpass-Password-manager
 mkdir bin # cruxpass binary is build here
-make intstall
+make # build cruxpass binary
+make intstall # intstall
 
 #Run the program:
-Bash
 cruxpass <option> <argument>
 
-uninstall with: make uninstall
->>>>>>> 1e28ae2 (README update)
-```
-
-# Run the program:
-```Bash
-cruxpass <option> <argument>
-
-#Uninstallation
+#uninstallation:
 make uninstall
 ```
 
