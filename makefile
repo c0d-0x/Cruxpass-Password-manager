@@ -22,7 +22,7 @@ all: $(BIN)
 
 # Build executable
 $(BIN): $(OBJFILES)
-	$(CC) $(CFLAGS) $(LIBS) $(MAIN) -o $@ $^
+	$(CC) $(CFLAGS) $(LIBS) $(MAIN) $^ -o $@ 
 
 # Compile source files
 $(OBJFILES): $(CFILES)
@@ -35,7 +35,7 @@ install: $(BIN)
 	sudo install -m 0755 $(BIN) $(PREFIX)/bin
 
 # Phony target (no actual command)
-.PHONY: clean uninstall
+.PHONY: all test clean uninstall
 
 # Clean target
 clean:

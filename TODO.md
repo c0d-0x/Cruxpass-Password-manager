@@ -1,5 +1,5 @@
 # cruxpass v1.20 - [Todo]
-+ Refresh window open term resize 
++ Refresh window upon term resize 
 ## Adopt vim key bindings
   + d: delete <PASS ID>
   + y: yank <PASS ID>
