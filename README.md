@@ -51,7 +51,7 @@ Password storage: Passwords are stored in an encrypted binary file in "~/.local/
 Authentication: cruxPass requires authentication before accessing or modifying stored passwords.
 Best practices: Always use strong, unique passwords and never share them with others.
 
-NOTE: Use it at your own risks, as this project was implemented for a better understanding of file IO,
+NOTE: This project is to be rewrited in Go for a better TUI. Use it at your own risks, as this project was implemented for a better understanding of file IO,
 basic encryption and decryption, data serialisation and deserialization. You might need to clear your bash
 history after saving a password with the -s option.
 
